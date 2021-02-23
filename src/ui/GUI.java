@@ -31,8 +31,6 @@ public class GUI extends Application
 //        {
 //            System.out.println(map.getKey() + " -> " + map.getValue());
 //        }
-
-        primaryStage.show();
     }
 
     public void enterDBInfo()
@@ -113,10 +111,17 @@ public class GUI extends Application
                 System.out.println(rs.getString(1));
             }
 
-        } catch (SQLException | ClassNotFoundException e)
+        }  catch(ClassNotFoundException e)
         {
-            e.printStackTrace();
-        } finally
+            System.out.println("Incorrect Driver URL");
+        } catch(SQLNonTransientConnectionException e)
+        {
+            System.out.println("Incorrect Login Info");
+        }catch (SQLException e)
+        {
+            System.out.println("Incorrect Database URL");;
+        }
+            finally
         {
             //close the connection
             try
