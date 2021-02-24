@@ -21,6 +21,8 @@ import src.DBOperations;
 
 import java.sql.*;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -43,12 +45,7 @@ public class GUI extends Application
     @Override
     public void start(Stage primaryStage)
     {
-//        primaryStage.setTitle("ui.Game Database");
         enterDBInfo();
-//        for(Map.Entry<String,String> map: dbInput.entrySet())
-//        {
-//            System.out.println(map.getKey() + " -> " + map.getValue());
-//        }
     }
 
     public void enterDBInfo()
@@ -62,10 +59,11 @@ public class GUI extends Application
         Label pwdLabel = new Label("Enter password: ");
         Label driverUrlLabel = new Label("Enter the url for the driver: ");
 
-        TextField dbURLField = new TextField();
-        TextField uNameField = new TextField();
-        TextField pwdField = new PasswordField();
-        TextField driverURLField = new TextField();;
+        TextField dbURLField = new TextField("jdbc:mysql://localhost/game_db?autoReconnect=true&useSSL= false");
+        TextField uNameField = new TextField("root");
+        //change to password field later
+        TextField pwdField = new TextField("Cardinals2112");
+        TextField driverURLField = new TextField("com.mysql.cj.jdbc.Driver");;
 
         gridpane.add(dbUrlLabel,0,0);
         gridpane.add(uNameLabel,0,1);
@@ -97,8 +95,6 @@ public class GUI extends Application
             connectToDB();
 
             stage.hide();
-
-
         });
     }
 
@@ -134,6 +130,7 @@ public class GUI extends Application
         VBox vBox = new VBox();
         Pane wrapperPane = new Pane();
 
+
         Button showGamesButton = new Button("List Games");
         showGamesButton.setMinSize(400,75);
 
@@ -165,14 +162,34 @@ public class GUI extends Application
             wrapperPane.getChildren().add(showGames());
         });
 
+        addGamesButton.setOnAction(e -> {
+            wrapperPane.getChildren().clear();
+            wrapperPane.getChildren().add(addGame());
+        });
+
         showPublisherButton.setOnAction(e -> {
             wrapperPane.getChildren().clear();
             wrapperPane.getChildren().add(showPublishers());
         });
 
+        addPublisherButton.setOnAction(e -> {
+            wrapperPane.getChildren().clear();
+            wrapperPane.getChildren().add(addPublisher());
+        });
+
         showReviewersButton.setOnAction(e -> {
             wrapperPane.getChildren().clear();
             wrapperPane.getChildren().add(showReviewers());
+        });
+
+        addReviewersButton.setOnAction(e -> {
+            wrapperPane.getChildren().clear();
+            wrapperPane.getChildren().add(addReviewer());
+        });
+
+        addReviewButton.setOnAction(e -> {
+            wrapperPane.getChildren().clear();
+            wrapperPane.getChildren().add(addReview());
         });
 
         Stage stage = new Stage();
@@ -181,7 +198,6 @@ public class GUI extends Application
         stage.setMinWidth(850);
         stage.show();
     }
-
 
     public TableView showGames()
     {
@@ -250,13 +266,192 @@ public class GUI extends Application
                     row.add(res.getRs().getString(i));
                 }
                 data.add(row);
-
             }
             table.setItems(data);
         } catch(SQLException e)
         {
             e.printStackTrace();
         }
+    }
+
+    public VBox addGame()
+    {
+        VBox vbox = new VBox();
+        Label gameName = new Label("Game Name");
+        Label gameGenre = new Label("Game Genre");
+        Label releaseYear = new Label("Release Year");
+        Label pubName = new Label("Publisher");
+
+        DBOperations publishers = new DBOperations(conn);
+        DBObject res = publishers.getPublisherNames();
+        LinkedList<String> names = new LinkedList<>();
+        try
+        {
+            while (res.getRs().next())
+            {
+                names.add(res.getRs().getString(1));
+            }
+
+        } catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+
+        TextField gameNameInput = new TextField();
+        gameNameInput.setMinWidth(200);
+
+        TextField gameGenreInput = new TextField();
+        gameGenreInput.setMinWidth(200);
+
+        TextField releaseYearInput = new TextField();
+        releaseYearInput.setMinWidth(200);
+
+//        TextField pubNameInput = new TextField();
+//        pubNameInput.setMinWidth(200);
+        ComboBox comboBox = new ComboBox(FXCollections.observableList(names));
+
+        VBox nameBox = new VBox();
+        nameBox.getChildren().addAll(gameName,gameNameInput);
+
+        VBox genreBox = new VBox();
+        genreBox.getChildren().addAll(gameGenre,gameGenreInput);
+
+        VBox yearBox = new VBox();
+        yearBox.getChildren().addAll(releaseYear,releaseYearInput);
+
+        VBox pubBox = new VBox();
+        pubBox.getChildren().addAll(pubName,comboBox);
+
+        Button enterButton = new Button("Enter");
+        enterButton.setMinWidth(50);
+
+        vbox.getChildren().addAll(nameBox,genreBox,yearBox,pubBox,enterButton);
+        vbox.setSpacing(40);
+        vbox.setMargin(nameBox,new Insets(30, 10, 10, 40));
+        vbox.setMargin(genreBox,new Insets(10, 10, 10, 40));
+        vbox.setMargin(yearBox,new Insets(10, 10, 10, 40));
+        vbox.setMargin(pubBox,new Insets(10, 10, 10, 40));
+        vbox.setAlignment(Pos.CENTER);
+
+        return vbox;
+    }
+
+
+
+    public VBox addPublisher()
+    {
+        VBox vbox = new VBox();
+        Label pubName = new Label("Publisher Name");
+        Label pubCity = new Label("Publisher City");
+        Label pubState = new Label("Publisher State");
+        Label pubCountry = new Label("Publisher Country");
+
+        TextField pubNameInput = new TextField();
+        pubNameInput.setMinWidth(200);
+
+        TextField pubCityInput = new TextField();
+        pubCityInput.setMinWidth(200);
+
+        TextField pubStateInput = new TextField();
+        pubStateInput.setMinWidth(200);
+
+        TextField pubCountryInput = new TextField();
+        pubCountryInput.setMinWidth(200);
+
+        VBox nameBox = new VBox();
+        nameBox.getChildren().addAll(pubName,pubNameInput);
+
+        VBox cityBox = new VBox();
+        cityBox.getChildren().addAll(pubCity,pubCityInput);
+
+        VBox stateBox = new VBox();
+        stateBox.getChildren().addAll(pubState,pubStateInput);
+
+        VBox countryBox = new VBox();
+        countryBox.getChildren().addAll(pubCountry,pubCountryInput);
+
+        Button enterButton = new Button("Enter");
+        enterButton.setMinWidth(50);
+
+        vbox.getChildren().addAll(nameBox,cityBox,stateBox,countryBox,enterButton);
+
+        vbox.setSpacing(40);
+        vbox.setMargin(nameBox,new Insets(30, 10, 10, 40));
+        vbox.setMargin(cityBox,new Insets(10, 10, 10, 40));
+        vbox.setMargin(stateBox,new Insets(10, 10, 10, 40));
+        vbox.setMargin(countryBox,new Insets(10, 10, 10, 40));
+        vbox.setAlignment(Pos.CENTER);
+
+        return vbox;
+    }
+
+    public VBox addReviewer()
+    {
+        VBox vbox = new VBox();
+        Label reviewerName = new Label("Reviewer Name");
+
+        TextField reviewerNameInput = new TextField();
+        reviewerNameInput.setMinWidth(200);
+
+        VBox nameBox = new VBox();
+        nameBox.getChildren().addAll(reviewerName,reviewerNameInput);
+
+        Button enterButton = new Button("Enter");
+        enterButton.setMinWidth(50);
+
+        vbox.getChildren().addAll(nameBox,enterButton);
+        vbox.setSpacing(30);
+        vbox.setMargin(nameBox,new Insets(30,10,10,40));
+        vbox.setAlignment(Pos.CENTER);
+        return vbox;
+    }
+
+    public VBox addReview()
+    {
+        VBox vBox = new VBox();
+
+        Label reviewerName = new Label("Reviewer Name");
+        Label gameName = new Label("Game Name");
+        Label rating = new Label("Score(out of 100)");
+        Label comment = new Label("Comment");
+
+        TextField reviewerNameInput = new TextField();
+        reviewerNameInput.setMinWidth(200);
+
+        TextField gameNameInput = new TextField();
+        gameNameInput.setMinWidth(200);
+
+        TextField ratingInput = new TextField();
+        ratingInput.setMinWidth(200);
+
+        TextField commentInput = new TextField();
+        commentInput.setMinWidth(200);
+
+        VBox reviewerNameBox = new VBox();
+        reviewerNameBox.getChildren().addAll(reviewerName,reviewerNameInput);
+
+        VBox gameNameBox = new VBox();
+        gameNameBox.getChildren().addAll(gameName,gameNameInput);
+
+        VBox ratingBox = new VBox();
+        ratingBox.getChildren().addAll(rating,ratingInput);
+
+        VBox commentBox = new VBox();
+        commentBox.getChildren().addAll(comment,commentInput);
+
+        Button enterButton = new Button("Enter");
+        enterButton.setMinWidth(50);
+
+        vBox.getChildren().addAll(reviewerNameBox,gameNameBox,ratingBox,commentBox,enterButton);
+
+        vBox.setSpacing(40);
+        vBox.setMargin(reviewerNameBox,new Insets(30, 10, 10, 40));
+        vBox.setMargin(gameNameBox,new Insets(10, 10, 10, 40));
+        vBox.setMargin(ratingBox,new Insets(10, 10, 10, 40));
+        vBox.setMargin(commentBox,new Insets(10, 10, 10, 40));
+        vBox.setAlignment(Pos.CENTER);
+
+        return vBox;
     }
 
 }

@@ -39,6 +39,20 @@ public class DBOperations
         DBObject res = new DBObject(rs,null);
         return res;
     }
+    public DBObject getPublisherNames()
+    {
+        try
+        {
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery("SELECT name FROM publisher;");
+        } catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+
+        DBObject pubNames = new DBObject(rs,null);
+        return pubNames;
+    }
 
     public DBObject getPublishers()
     {
@@ -80,6 +94,22 @@ public class DBOperations
         return res;
     }
 
+    public void addGame()
+    {
+        try
+        {
+            //Do not commit to the database until specified
+            conn.setAutoCommit(false);
+
+            //prepared statement to update the actors of a specified film
+            pstmt = conn.prepareStatement("INSERT INTO game(pub_id, genre, name, release_year) VALUES(?,?,?,?);");
+
+        } catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
     public void close(Statement stmt, ResultSet rs, PreparedStatement pstmt)
     {
         try
@@ -101,4 +131,5 @@ public class DBOperations
             e.printStackTrace();
         }
     }
+
 }
