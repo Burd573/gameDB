@@ -1,17 +1,20 @@
 package ui;
 
 import javafx.application.Application;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 import java.sql.*;
 import java.util.HashMap;
@@ -21,11 +24,21 @@ import java.util.Map;
 public class GUI extends Application
 {
     Map<String, String> dbInput = new HashMap<>();
+    String url = "DbUrl";
+    String uName = "username";
+    String pwd = "password";
+    String driverUrl = "driverUrl";
+
+
+    ResultSet rs = null;
+    Statement stmt = null;
+    ResultSetMetaData rsmd = null;
+    Connection conn = null;
 
     @Override
     public void start(Stage primaryStage)
     {
-        primaryStage.setTitle("Game Database");
+//        primaryStage.setTitle("ui.Game Database");
         enterDBInfo();
 //        for(Map.Entry<String,String> map: dbInput.entrySet())
 //        {
@@ -72,11 +85,6 @@ public class GUI extends Application
         stage.show();
 
         okButton.setOnAction(e -> {
-            String url = "DbUrl";
-            String uName = "username";
-            String pwd = "password";
-            String driverUrl = "driverUrl";
-
             dbInput.put(url,dbURLField.getText());
             dbInput.put(uName,uNameField.getText());
             dbInput.put(pwd,pwdField.getText());
@@ -84,32 +92,23 @@ public class GUI extends Application
             connectToDB();
 
             stage.hide();
+
+
         });
     }
 
     public void connectToDB()
     {
-        Connection conn = null;
-        ResultSet rs = null;
-        Statement stmt = null;
-
         String _url = dbInput.get("DbUrl");
         String userName = dbInput.get("username");
         String pwd = dbInput.get("password");
+
 
         //Execute relevant method based off argument entered in command line
         try {
             Class.forName(dbInput.get("driverUrl"));
             conn = DriverManager.getConnection(_url, userName, pwd);
-
-            stmt = conn.createStatement();
-
-            //SQL query
-            rs = stmt.executeQuery("SELECT name FROM game");
-            while(rs.next())
-            {
-                System.out.println(rs.getString(1));
-            }
+            showGames();
 
         }  catch(ClassNotFoundException e)
         {
@@ -121,20 +120,97 @@ public class GUI extends Application
         {
             System.out.println("Incorrect Database URL");;
         }
-            finally
+
+
+    }
+
+    public void showGames()
+    {
+        ObservableList<ObservableList> data = FXCollections.observableArrayList();
+        TableView table = new TableView();
+
+
+        try
         {
-            //close the connection
-            try
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery("SELECT game.name, genre, release_year, publisher.name, AVG(rating)\n" +
+                    "FROM game\n" +
+                    "JOIN publisher\n" +
+                    "\tON game.pub_id = publisher.pub_id\n" +
+                    "JOIN review\n" +
+                    "\tON game.game_id = review.game_id\n" +
+                    "GROUP BY game.name");
+            rsmd = rs.getMetaData();
+            int cols = rsmd.getColumnCount();
+
+            for (int i = 0; i < cols; i++)
             {
-                if (conn != null)
-                {
-                    conn.close();
-                }
-            } catch (SQLException e)
-            {
-                e.printStackTrace();
+                final int j = i;
+                TableColumn col = new TableColumn(rs.getMetaData().getColumnName(i+1));
+                col.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ObservableList,String>,ObservableValue<String>>(){
+                    public ObservableValue<String> call(TableColumn.CellDataFeatures<ObservableList, String> param) {
+                        return new SimpleStringProperty(param.getValue().get(j).toString());
+                    }
+                });
+
+                table.getColumns().addAll(col);
+                System.out.println("Column ["+i+"] ");
             }
+
+            while(rs.next()){
+                //Iterate Row
+                ObservableList<String> row = FXCollections.observableArrayList();
+                for(int i=1 ; i<=rs.getMetaData().getColumnCount(); i++){
+                    //Iterate Column
+                    row.add(rs.getString(i));
+                }
+                System.out.println("Row [1] added "+row );
+                data.add(row);
+
+            }
+
+            //FINALLY ADDED TO TableView
+            table.setItems(data);
+//            }
+//            {
+//                TableColumn col = new TableColumn(rsmd.getColumnName(i + 1));
+//                col.setCellValueFactory(new PropertyValueFactory<Game,String>("name"));
+//                col.setCellValueFactory(new PropertyValueFactory<Game,String>("genre"));
+//                col.setCellValueFactory(new PropertyValueFactory<Game, Integer>("release_year"));
+//                col.setCellValueFactory(new PropertyValueFactory<Game,String>("publisher"));
+//                col.setCellValueFactory(new PropertyValueFactory<Game,Integer>("avgReviews"));
+//
+//
+//                table.getColumns().addAll(col);
+//
+//
+//
+//            }
+//            while(rs.next())
+//            {
+//                data.add(new Game(rs.getString(1),rs.getString(2),Integer.parseInt(rs.getString(3)),rs.getString(4),Double.parseDouble(rs.getString(5))));
+//                table.getItems().add(new Game(rs.getString(1),rs.getString(2),Integer.parseInt(rs.getString(3)),rs.getString(4),Double.parseDouble(rs.getString(5))));
+//            }
+
+//            System.out.println(data.get(0).name);
+//            System.out.println(data.get(1).name);
+//            System.out.println(data.get(2).name);
+//            System.out.println(data.get(3).name);
+
+//            table.setItems(data);
+//            table.getItems().add(new Game(rs.getString(1),rs.getString(2),Integer.parseInt(rs.getString(3)),rs.getString(4),Double.parseDouble(rs.getString(5))
+
+        } catch(SQLException e)
+        {
+            e.printStackTrace();
         }
+
+        Stage stage = new Stage();
+        Scene scene = new Scene(table);
+        stage.setScene(scene);
+        stage.show();
+
+
     }
 
 }
