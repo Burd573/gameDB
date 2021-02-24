@@ -108,7 +108,9 @@ public class GUI extends Application
         try {
             Class.forName(dbInput.get("driverUrl"));
             conn = DriverManager.getConnection(_url, userName, pwd);
-            showGames();
+//            showGames();
+//            showPublishers();
+                showReviewers();
 
         }  catch(ClassNotFoundException e)
         {
@@ -128,8 +130,6 @@ public class GUI extends Application
     {
         ObservableList<ObservableList> data = FXCollections.observableArrayList();
         TableView table = new TableView();
-
-
         try
         {
             stmt = conn.createStatement();
@@ -171,35 +171,6 @@ public class GUI extends Application
 
             //FINALLY ADDED TO TableView
             table.setItems(data);
-//            }
-//            {
-//                TableColumn col = new TableColumn(rsmd.getColumnName(i + 1));
-//                col.setCellValueFactory(new PropertyValueFactory<Game,String>("name"));
-//                col.setCellValueFactory(new PropertyValueFactory<Game,String>("genre"));
-//                col.setCellValueFactory(new PropertyValueFactory<Game, Integer>("release_year"));
-//                col.setCellValueFactory(new PropertyValueFactory<Game,String>("publisher"));
-//                col.setCellValueFactory(new PropertyValueFactory<Game,Integer>("avgReviews"));
-//
-//
-//                table.getColumns().addAll(col);
-//
-//
-//
-//            }
-//            while(rs.next())
-//            {
-//                data.add(new Game(rs.getString(1),rs.getString(2),Integer.parseInt(rs.getString(3)),rs.getString(4),Double.parseDouble(rs.getString(5))));
-//                table.getItems().add(new Game(rs.getString(1),rs.getString(2),Integer.parseInt(rs.getString(3)),rs.getString(4),Double.parseDouble(rs.getString(5))));
-//            }
-
-//            System.out.println(data.get(0).name);
-//            System.out.println(data.get(1).name);
-//            System.out.println(data.get(2).name);
-//            System.out.println(data.get(3).name);
-
-//            table.setItems(data);
-//            table.getItems().add(new Game(rs.getString(1),rs.getString(2),Integer.parseInt(rs.getString(3)),rs.getString(4),Double.parseDouble(rs.getString(5))
-
         } catch(SQLException e)
         {
             e.printStackTrace();
@@ -209,8 +180,116 @@ public class GUI extends Application
         Scene scene = new Scene(table);
         stage.setScene(scene);
         stage.show();
+    }
 
+    public void showPublishers()
+    {
+        ObservableList<ObservableList> data = FXCollections.observableArrayList();
+        TableView table = new TableView();
+        try
+        {
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery("SELECT publisher.name, city, state, county, AVG(rating)\n" +
+                    "FROM game\n" +
+                    "JOIN publisher\n" +
+                    "\tON game.pub_id = publisher.pub_id\n" +
+                    "JOIN review\n" +
+                    "\tON game.game_id = review.game_id\n" +
+                    "GROUP BY publisher.name");
+            rsmd = rs.getMetaData();
+            int cols = rsmd.getColumnCount();
 
+            for (int i = 0; i < cols; i++)
+            {
+                final int j = i;
+                TableColumn col = new TableColumn(rs.getMetaData().getColumnName(i+1));
+                col.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ObservableList,String>,ObservableValue<String>>(){
+                    public ObservableValue<String> call(TableColumn.CellDataFeatures<ObservableList, String> param) {
+                        return new SimpleStringProperty(param.getValue().get(j).toString());
+                    }
+                });
+
+                table.getColumns().addAll(col);
+                System.out.println("Column ["+i+"] ");
+            }
+
+            while(rs.next()){
+                //Iterate Row
+                ObservableList<String> row = FXCollections.observableArrayList();
+                for(int i=1 ; i<=rs.getMetaData().getColumnCount(); i++){
+                    //Iterate Column
+                    row.add(rs.getString(i));
+                }
+                System.out.println("Row [1] added "+row );
+                data.add(row);
+
+            }
+
+            //FINALLY ADDED TO TableView
+            table.setItems(data);
+        } catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+
+        Stage stage = new Stage();
+        Scene scene = new Scene(table);
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    public void showReviewers()
+    {
+        ObservableList<ObservableList> data = FXCollections.observableArrayList();
+        TableView table = new TableView();
+        try
+        {
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery("SELECT reviewer.name, AVG(rating), COUNT(rating)\n" +
+                    "FROM reviewer\n" +
+                    "JOIN review\n" +
+                    "\tON review.reviewer_id = reviewer.reviewer_id\n" +
+                    "GROUP BY reviewer.reviewer_id");
+            rsmd = rs.getMetaData();
+            int cols = rsmd.getColumnCount();
+
+            for (int i = 0; i < cols; i++)
+            {
+                final int j = i;
+                TableColumn col = new TableColumn(rs.getMetaData().getColumnName(i+1));
+                col.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ObservableList,String>,ObservableValue<String>>(){
+                    public ObservableValue<String> call(TableColumn.CellDataFeatures<ObservableList, String> param) {
+                        return new SimpleStringProperty(param.getValue().get(j).toString());
+                    }
+                });
+
+                table.getColumns().addAll(col);
+                System.out.println("Column ["+i+"] ");
+            }
+
+            while(rs.next()){
+                //Iterate Row
+                ObservableList<String> row = FXCollections.observableArrayList();
+                for(int i=1 ; i<=rs.getMetaData().getColumnCount(); i++){
+                    //Iterate Column
+                    row.add(rs.getString(i));
+                }
+                System.out.println("Row [1] added "+row );
+                data.add(row);
+
+            }
+
+            //FINALLY ADDED TO TableView
+            table.setItems(data);
+        } catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+
+        Stage stage = new Stage();
+        Scene scene = new Scene(table);
+        stage.setScene(scene);
+        stage.show();
     }
 
 }
