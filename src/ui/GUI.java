@@ -1,6 +1,7 @@
 package ui;
 
 import javafx.application.Application;
+import javafx.beans.Observable;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -15,6 +16,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import src.DBObject;
+import src.DBOperations;
 
 import java.sql.*;
 import java.util.HashMap;
@@ -35,6 +38,7 @@ public class GUI extends Application
     Statement stmt = null;
     ResultSetMetaData rsmd = null;
     Connection conn = null;
+
 
     @Override
     public void start(Stage primaryStage)
@@ -109,10 +113,7 @@ public class GUI extends Application
         try {
             Class.forName(dbInput.get("driverUrl"));
             conn = DriverManager.getConnection(_url, userName, pwd);
-//            showGames();
-//            showPublishers();
-//                showReviewers();
-//            menuButtons();
+            showGames();
             showMainMenu();
 
         }  catch(ClassNotFoundException e)
@@ -125,8 +126,6 @@ public class GUI extends Application
         {
             System.out.println("Incorrect Database URL");;
         }
-
-
     }
 
     public void showMainMenu()
@@ -181,89 +180,17 @@ public class GUI extends Application
         stage.setScene(scene);
         stage.setMinWidth(850);
         stage.show();
-
-
     }
 
-    public VBox menuButtons()
-    {
-        VBox vBox = new VBox();
-        Button showGamesButton = new Button("List Games");
-        showGamesButton.setMinSize(400,75);
 
-        Button addGamesButton = new Button("Add Game");
-        addGamesButton.setMinSize(400,75);
-
-        Button showPublisherButton = new Button("List Publishers");
-        showPublisherButton.setMinSize(400,75);
-
-        Button addPublisherButton = new Button("add Publisher");
-        addPublisherButton.setMinSize(400,75);
-
-        Button showReviewersButton = new Button("List Reviewers");
-        showReviewersButton.setMinSize(400,75);
-
-        Button addReviewersButton = new Button("Add Reviewer");
-        addReviewersButton.setMinSize(400,75);
-
-        Button addReviewButton = new Button("Add Review");
-        addReviewButton.setMinSize(400,75);
-
-        vBox.getChildren().addAll(showGamesButton,addGamesButton,showPublisherButton,
-                addPublisherButton,showReviewersButton,addReviewersButton,addReviewButton);
-
-        return vBox;
-
-    }
     public TableView showGames()
     {
+        DBOperations games = new DBOperations(conn);
         ObservableList<ObservableList> data = FXCollections.observableArrayList();
         TableView table = new TableView();
-        try
-        {
-            stmt = conn.createStatement();
-            rs = stmt.executeQuery("SELECT game.name, genre, release_year, publisher.name, AVG(rating)\n" +
-                    "FROM game\n" +
-                    "JOIN publisher\n" +
-                    "\tON game.pub_id = publisher.pub_id\n" +
-                    "JOIN review\n" +
-                    "\tON game.game_id = review.game_id\n" +
-                    "GROUP BY game.name");
-            rsmd = rs.getMetaData();
-            int cols = rsmd.getColumnCount();
+        DBObject res = games.getGames();
 
-            for (int i = 0; i < cols; i++)
-            {
-                final int j = i;
-                TableColumn col = new TableColumn(rs.getMetaData().getColumnName(i+1));
-                col.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ObservableList,String>,ObservableValue<String>>(){
-                    public ObservableValue<String> call(TableColumn.CellDataFeatures<ObservableList, String> param) {
-                        return new SimpleStringProperty(param.getValue().get(j).toString());
-                    }
-                });
-
-                table.getColumns().addAll(col);
-                System.out.println("Column ["+i+"] ");
-            }
-
-            while(rs.next()){
-                //Iterate Row
-                ObservableList<String> row = FXCollections.observableArrayList();
-                for(int i=1 ; i<=rs.getMetaData().getColumnCount(); i++){
-                    //Iterate Column
-                    row.add(rs.getString(i));
-                }
-                System.out.println("Row [1] added "+row );
-                data.add(row);
-
-            }
-
-            //FINALLY ADDED TO TableView
-            table.setItems(data);
-        } catch(SQLException e)
-        {
-            e.printStackTrace();
-        }
+        enterTableData(res,data,table);
 
         table.setMinHeight(525);
         return table;
@@ -271,116 +198,65 @@ public class GUI extends Application
 
     public TableView showPublishers()
     {
+        DBOperations publishers = new DBOperations(conn);
         ObservableList<ObservableList> data = FXCollections.observableArrayList();
         TableView table = new TableView();
-        try
-        {
-            stmt = conn.createStatement();
-            rs = stmt.executeQuery("SELECT publisher.name, city, state, county, AVG(rating)\n" +
-                    "FROM game\n" +
-                    "JOIN publisher\n" +
-                    "\tON game.pub_id = publisher.pub_id\n" +
-                    "JOIN review\n" +
-                    "\tON game.game_id = review.game_id\n" +
-                    "GROUP BY publisher.name");
-            rsmd = rs.getMetaData();
-            int cols = rsmd.getColumnCount();
+        DBObject res = publishers.getPublishers();
 
-            for (int i = 0; i < cols; i++)
-            {
-                final int j = i;
-                TableColumn col = new TableColumn(rs.getMetaData().getColumnName(i+1));
-                col.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ObservableList,String>,ObservableValue<String>>(){
-                    public ObservableValue<String> call(TableColumn.CellDataFeatures<ObservableList, String> param) {
-                        return new SimpleStringProperty(param.getValue().get(j).toString());
-                    }
-                });
+        enterTableData(res,data,table);
 
-                table.getColumns().addAll(col);
-                System.out.println("Column ["+i+"] ");
-            }
-
-            while(rs.next()){
-                //Iterate Row
-                ObservableList<String> row = FXCollections.observableArrayList();
-                for(int i=1 ; i<=rs.getMetaData().getColumnCount(); i++){
-                    //Iterate Column
-                    row.add(rs.getString(i));
-                }
-                System.out.println("Row [1] added "+row );
-                data.add(row);
-
-            }
-
-            //FINALLY ADDED TO TableView
-            table.setItems(data);
-        } catch(SQLException e)
-        {
-            e.printStackTrace();
-        }
         table.setMinHeight(525);
         return table;
-
-//        Stage stage = new Stage();
-//        Scene scene = new Scene(table);
-//        stage.setScene(scene);
-//        stage.show();
     }
 
     public TableView showReviewers()
     {
+        DBOperations reviewers = new DBOperations(conn);
         ObservableList<ObservableList> data = FXCollections.observableArrayList();
         TableView table = new TableView();
+        DBObject res = reviewers.getReviewers();
+
+        enterTableData(res,data,table);
+
+        table.setMinHeight(525);
+        return table;
+    }
+
+    public void enterTableData(DBObject res, ObservableList<ObservableList> data, TableView table)
+    {
         try
         {
-            stmt = conn.createStatement();
-            rs = stmt.executeQuery("SELECT reviewer.name, AVG(rating), COUNT(rating)\n" +
-                    "FROM reviewer\n" +
-                    "JOIN review\n" +
-                    "\tON review.reviewer_id = reviewer.reviewer_id\n" +
-                    "GROUP BY reviewer.reviewer_id");
-            rsmd = rs.getMetaData();
-            int cols = rsmd.getColumnCount();
-
+            int cols = res.getRsmd().getColumnCount();
             for (int i = 0; i < cols; i++)
             {
                 final int j = i;
-                TableColumn col = new TableColumn(rs.getMetaData().getColumnName(i+1));
-                col.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ObservableList,String>,ObservableValue<String>>(){
-                    public ObservableValue<String> call(TableColumn.CellDataFeatures<ObservableList, String> param) {
+                TableColumn col = new TableColumn(res.getRsmd().getColumnName(i + 1));
+                col.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ObservableList, String>, ObservableValue<String>>()
+                {
+                    public ObservableValue<String> call(TableColumn.CellDataFeatures<ObservableList, String> param)
+                    {
                         return new SimpleStringProperty(param.getValue().get(j).toString());
                     }
                 });
 
                 table.getColumns().addAll(col);
-                System.out.println("Column ["+i+"] ");
             }
 
-            while(rs.next()){
-                //Iterate Row
+            while (res.getRs().next())
+            {
                 ObservableList<String> row = FXCollections.observableArrayList();
-                for(int i=1 ; i<=rs.getMetaData().getColumnCount(); i++){
-                    //Iterate Column
-                    row.add(rs.getString(i));
+                for (int i = 1; i <= res.getRsmd().getColumnCount(); i++)
+                {
+                    row.add(res.getRs().getString(i));
                 }
-                System.out.println("Row [1] added "+row );
                 data.add(row);
 
             }
-
-            //FINALLY ADDED TO TableView
             table.setItems(data);
         } catch(SQLException e)
         {
             e.printStackTrace();
         }
-
-        table.setMinHeight(525);
-        return table;
-//        Stage stage = new Stage();
-//        Scene scene = new Scene(table);
-//        stage.setScene(scene);
-//        stage.show();
     }
 
 }
