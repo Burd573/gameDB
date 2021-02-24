@@ -24,13 +24,12 @@ public class DBOperations
         try
         {
             stmt = conn.createStatement();
-            rs = stmt.executeQuery("SELECT game.name, genre, release_year, publisher.name, AVG(rating)\n" +
-                    "FROM game\n" +
-                    "JOIN publisher\n" +
-                    "\tON game.pub_id = publisher.pub_id\n" +
-                    "JOIN review\n" +
-                    "\tON game.game_id = review.game_id\n" +
-                    "GROUP BY game.name");
+            rs = stmt.executeQuery("select game.name, game.release_year, publisher.name, AVG(rating) from game\n" +
+                    "join publisher\n" +
+                    "\ton game.pub_id = publisher.pub_id\n" +
+                    "join review\n" +
+                    "\ton game.game_id = review.game_id\n" +
+                    "group by game.name");
         } catch(SQLException e)
         {
             e.printStackTrace();
