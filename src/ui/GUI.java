@@ -9,9 +9,9 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
@@ -19,6 +19,7 @@ import javafx.util.Callback;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 public class GUI extends Application
@@ -110,7 +111,9 @@ public class GUI extends Application
             conn = DriverManager.getConnection(_url, userName, pwd);
 //            showGames();
 //            showPublishers();
-                showReviewers();
+//                showReviewers();
+//            menuButtons();
+            showMainMenu();
 
         }  catch(ClassNotFoundException e)
         {
@@ -126,7 +129,93 @@ public class GUI extends Application
 
     }
 
-    public void showGames()
+    public void showMainMenu()
+    {
+        HBox hbox = new HBox();
+        VBox vBox = new VBox();
+        Pane wrapperPane = new Pane();
+
+        Button showGamesButton = new Button("List Games");
+        showGamesButton.setMinSize(400,75);
+
+        Button addGamesButton = new Button("Add Game");
+        addGamesButton.setMinSize(400,75);
+
+        Button showPublisherButton = new Button("List Publishers");
+        showPublisherButton.setMinSize(400,75);
+
+        Button addPublisherButton = new Button("add Publisher");
+        addPublisherButton.setMinSize(400,75);
+
+        Button showReviewersButton = new Button("List Reviewers");
+        showReviewersButton.setMinSize(400,75);
+
+        Button addReviewersButton = new Button("Add Reviewer");
+        addReviewersButton.setMinSize(400,75);
+
+        Button addReviewButton = new Button("Add Review");
+        addReviewButton.setMinSize(400,75);
+
+        vBox.getChildren().addAll(showGamesButton,addGamesButton,showPublisherButton,
+                addPublisherButton,showReviewersButton,addReviewersButton,addReviewButton);
+
+        hbox.getChildren().addAll(vBox,wrapperPane);
+
+        showGamesButton.setOnAction(e -> {
+            wrapperPane.getChildren().clear();
+            wrapperPane.getChildren().add(showGames());
+        });
+
+        showPublisherButton.setOnAction(e -> {
+            wrapperPane.getChildren().clear();
+            wrapperPane.getChildren().add(showPublishers());
+        });
+
+        showReviewersButton.setOnAction(e -> {
+            wrapperPane.getChildren().clear();
+            wrapperPane.getChildren().add(showReviewers());
+        });
+
+        Stage stage = new Stage();
+        Scene scene = new Scene(hbox);
+        stage.setScene(scene);
+        stage.setMinWidth(850);
+        stage.show();
+
+
+    }
+
+    public VBox menuButtons()
+    {
+        VBox vBox = new VBox();
+        Button showGamesButton = new Button("List Games");
+        showGamesButton.setMinSize(400,75);
+
+        Button addGamesButton = new Button("Add Game");
+        addGamesButton.setMinSize(400,75);
+
+        Button showPublisherButton = new Button("List Publishers");
+        showPublisherButton.setMinSize(400,75);
+
+        Button addPublisherButton = new Button("add Publisher");
+        addPublisherButton.setMinSize(400,75);
+
+        Button showReviewersButton = new Button("List Reviewers");
+        showReviewersButton.setMinSize(400,75);
+
+        Button addReviewersButton = new Button("Add Reviewer");
+        addReviewersButton.setMinSize(400,75);
+
+        Button addReviewButton = new Button("Add Review");
+        addReviewButton.setMinSize(400,75);
+
+        vBox.getChildren().addAll(showGamesButton,addGamesButton,showPublisherButton,
+                addPublisherButton,showReviewersButton,addReviewersButton,addReviewButton);
+
+        return vBox;
+
+    }
+    public TableView showGames()
     {
         ObservableList<ObservableList> data = FXCollections.observableArrayList();
         TableView table = new TableView();
@@ -176,13 +265,11 @@ public class GUI extends Application
             e.printStackTrace();
         }
 
-        Stage stage = new Stage();
-        Scene scene = new Scene(table);
-        stage.setScene(scene);
-        stage.show();
+        table.setMinHeight(525);
+        return table;
     }
 
-    public void showPublishers()
+    public TableView showPublishers()
     {
         ObservableList<ObservableList> data = FXCollections.observableArrayList();
         TableView table = new TableView();
@@ -231,14 +318,16 @@ public class GUI extends Application
         {
             e.printStackTrace();
         }
+        table.setMinHeight(525);
+        return table;
 
-        Stage stage = new Stage();
-        Scene scene = new Scene(table);
-        stage.setScene(scene);
-        stage.show();
+//        Stage stage = new Stage();
+//        Scene scene = new Scene(table);
+//        stage.setScene(scene);
+//        stage.show();
     }
 
-    public void showReviewers()
+    public TableView showReviewers()
     {
         ObservableList<ObservableList> data = FXCollections.observableArrayList();
         TableView table = new TableView();
@@ -286,10 +375,12 @@ public class GUI extends Application
             e.printStackTrace();
         }
 
-        Stage stage = new Stage();
-        Scene scene = new Scene(table);
-        stage.setScene(scene);
-        stage.show();
+        table.setMinHeight(525);
+        return table;
+//        Stage stage = new Stage();
+//        Scene scene = new Scene(table);
+//        stage.setScene(scene);
+//        stage.show();
     }
 
 }
