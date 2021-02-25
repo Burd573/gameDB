@@ -27,10 +27,6 @@ public class GUI extends Application
     String pwd = "password";
     String driverUrl = "driverUrl";
 
-
-    ResultSet rs = null;
-    Statement stmt = null;
-    ResultSetMetaData rsmd = null;
     Connection conn = null;
 
 
@@ -96,12 +92,9 @@ public class GUI extends Application
         String userName = dbInput.get("username");
         String pwd = dbInput.get("password");
 
-
-        //Execute relevant method based off argument entered in command line
         try {
             Class.forName(dbInput.get("driverUrl"));
             conn = DriverManager.getConnection(_url, userName, pwd);
-            showGames();
             showMainMenu();
 
         }  catch(ClassNotFoundException e)
@@ -119,30 +112,37 @@ public class GUI extends Application
     public void showMainMenu()
     {
         HBox hbox = new HBox();
+        hbox.setPrefWidth(600);
         VBox vBox = new VBox();
         Pane wrapperPane = new Pane();
+        wrapperPane.prefWidthProperty().bind(hbox.widthProperty());
 
+        Stage stage = new Stage();
+        stage.setMinWidth(600);
+        stage.setMinHeight(390);
+        Scene scene = new Scene(hbox);
+        stage.setScene(scene);
 
         Button showGamesButton = new Button("List Games");
-        showGamesButton.setMinSize(400,75);
+        showGamesButton.setMinSize(200,50);
 
         Button addGamesButton = new Button("Add Game");
-        addGamesButton.setMinSize(400,75);
+        addGamesButton.setMinSize(200,50);
 
         Button showPublisherButton = new Button("List Publishers");
-        showPublisherButton.setMinSize(400,75);
+        showPublisherButton.setMinSize(200,50);
 
         Button addPublisherButton = new Button("add Publisher");
-        addPublisherButton.setMinSize(400,75);
+        addPublisherButton.setMinSize(200,50);
 
         Button showReviewersButton = new Button("List Reviewers");
-        showReviewersButton.setMinSize(400,75);
+        showReviewersButton.setMinSize(200,50);
 
         Button addReviewersButton = new Button("Add Reviewer");
-        addReviewersButton.setMinSize(400,75);
+        addReviewersButton.setMinSize(200,50);
 
         Button addReviewButton = new Button("Add Review");
-        addReviewButton.setMinSize(400,75);
+        addReviewButton.setMinSize(200,50);
 
         vBox.getChildren().addAll(showGamesButton,addGamesButton,showPublisherButton,
                 addPublisherButton,showReviewersButton,addReviewersButton,addReviewButton);
@@ -150,75 +150,81 @@ public class GUI extends Application
         hbox.getChildren().addAll(vBox,wrapperPane);
 
         showGamesButton.setOnAction(e -> {
+            stage.sizeToScene();
             wrapperPane.getChildren().clear();
-            wrapperPane.getChildren().add(showGames());
+            wrapperPane.getChildren().add(showGames(wrapperPane));
         });
 
         addGamesButton.setOnAction(e -> {
+            stage.sizeToScene();
             wrapperPane.getChildren().clear();
-            wrapperPane.getChildren().add(addGame());
+            wrapperPane.getChildren().add(addGame(wrapperPane));
         });
 
         showPublisherButton.setOnAction(e -> {
+            stage.sizeToScene();
             wrapperPane.getChildren().clear();
-            wrapperPane.getChildren().add(showPublishers());
+            wrapperPane.getChildren().add(showPublishers(wrapperPane));
         });
 
         addPublisherButton.setOnAction(e -> {
+            stage.sizeToScene();
             wrapperPane.getChildren().clear();
-            wrapperPane.getChildren().add(addPublisher());
+            wrapperPane.getChildren().add(addPublisher(wrapperPane));
         });
 
         showReviewersButton.setOnAction(e -> {
+            stage.sizeToScene();
             wrapperPane.getChildren().clear();
-            wrapperPane.getChildren().add(showReviewers());
+            wrapperPane.getChildren().add(showReviewers(wrapperPane));
         });
 
         addReviewersButton.setOnAction(e -> {
+            stage.sizeToScene();
             wrapperPane.getChildren().clear();
-            wrapperPane.getChildren().add(addReviewer());
+            wrapperPane.getChildren().add(addReviewer(wrapperPane));
         });
 
         addReviewButton.setOnAction(e -> {
+            stage.sizeToScene();
             wrapperPane.getChildren().clear();
-            wrapperPane.getChildren().add(addReview());
+            wrapperPane.getChildren().add(addReview(wrapperPane));
         });
 
-        Stage stage = new Stage();
-        Scene scene = new Scene(hbox);
-        stage.setScene(scene);
-        stage.setMinWidth(850);
         stage.show();
     }
 
-    public TableView showGames()
+    public TableView showGames(Pane wrapper)
     {
         TableView table = new TableView();
 
         enterGameTableData(table);
 
-        table.setMinHeight(525);
+        table.prefHeightProperty().bind(wrapper.heightProperty());
+        table.prefWidthProperty().bind(wrapper.widthProperty());
         return table;
     }
 
-    public TableView showPublishers()
+    public TableView showPublishers(Pane wrapper)
     {
         TableView table = new TableView();
 
         enterPublisherTableData(table);
+        table.prefHeightProperty().bind(wrapper.heightProperty());
+        table.prefWidthProperty().bind(wrapper.widthProperty());
 
-        table.setMinHeight(525);
         return table;
     }
 
-    public TableView showReviewers()
+    public TableView showReviewers(Pane wrapper)
     {
         TableView table = new TableView();
 
         enterReviewerTableData(table);
 
-        table.setMinHeight(525);
-        table.setMinWidth(350);
+        table.prefHeightProperty().bind(wrapper.heightProperty());
+        table.prefWidthProperty().bind(wrapper.widthProperty());
+
         return table;
     }
 
@@ -284,7 +290,7 @@ public class GUI extends Application
         table.getItems().addAll(dbOps.getReviewers());
     }
 
-    public VBox addGame()
+    public VBox addGame(Pane wrapper)
     {
         VBox vbox = new VBox();
         Label gameName = new Label("Game Name");
@@ -304,7 +310,7 @@ public class GUI extends Application
         TextField releaseYearInput = new TextField();
         releaseYearInput.setMinWidth(200);
 
-        ComboBox<String> comboBox = new ComboBox<String>(FXCollections.observableArrayList(names));
+        ComboBox<String> comboBox = new ComboBox<>(FXCollections.observableArrayList(names));
 
         VBox nameBox = new VBox();
         nameBox.getChildren().addAll(gameName,gameNameInput);
@@ -326,19 +332,22 @@ public class GUI extends Application
         });
 
         vbox.getChildren().addAll(nameBox,genreBox,yearBox,pubBox,enterButton);
-        vbox.setSpacing(40);
-        vbox.setMargin(nameBox,new Insets(30, 10, 10, 40));
-        vbox.setMargin(genreBox,new Insets(10, 10, 10, 40));
-        vbox.setMargin(yearBox,new Insets(10, 10, 10, 40));
-        vbox.setMargin(pubBox,new Insets(10, 10, 10, 40));
+        vbox.setSpacing(20);
+        vbox.setMargin(nameBox,new Insets(15, 40, 0, 40));
+        vbox.setMargin(genreBox,new Insets(10, 40, 0, 40));
+        vbox.setMargin(yearBox,new Insets(10, 40, 0, 40));
+        vbox.setMargin(pubBox,new Insets(10, 40, 15, 40));
         vbox.setAlignment(Pos.CENTER);
+
+        vbox.prefHeightProperty().bind(wrapper.heightProperty());
+        vbox.prefWidthProperty().bind(wrapper.widthProperty());
 
         return vbox;
     }
 
 
 
-    public VBox addPublisher()
+    public VBox addPublisher(Pane wrapper)
     {
         VBox vbox = new VBox();
         Label pubName = new Label("Publisher Name");
@@ -380,17 +389,20 @@ public class GUI extends Application
 
         vbox.getChildren().addAll(nameBox,cityBox,stateBox,countryBox,enterButton);
 
-        vbox.setSpacing(40);
-        vbox.setMargin(nameBox,new Insets(30, 10, 10, 40));
-        vbox.setMargin(cityBox,new Insets(10, 10, 10, 40));
-        vbox.setMargin(stateBox,new Insets(10, 10, 10, 40));
-        vbox.setMargin(countryBox,new Insets(10, 10, 10, 40));
+        vbox.setSpacing(20);
+        vbox.setMargin(nameBox,new Insets(15, 40, 0, 40));
+        vbox.setMargin(cityBox,new Insets(10, 40, 0, 40));
+        vbox.setMargin(stateBox,new Insets(10, 40, 0, 40));
+        vbox.setMargin(countryBox,new Insets(10, 40, 15, 40));
         vbox.setAlignment(Pos.CENTER);
+
+        vbox.prefHeightProperty().bind(wrapper.heightProperty());
+        vbox.prefWidthProperty().bind(wrapper.widthProperty());
 
         return vbox;
     }
 
-    public VBox addReviewer()
+    public VBox addReviewer(Pane wrapper)
     {
         VBox vbox = new VBox();
 
@@ -413,12 +425,16 @@ public class GUI extends Application
 
         vbox.getChildren().addAll(nameBox,enterButton);
         vbox.setSpacing(30);
-        vbox.setMargin(nameBox,new Insets(30,10,10,40));
+        vbox.setMargin(nameBox,new Insets(30,40,10,40));
         vbox.setAlignment(Pos.CENTER);
+
+        vbox.prefHeightProperty().bind(wrapper.heightProperty());
+        vbox.prefWidthProperty().bind(wrapper.widthProperty());
+
         return vbox;
     }
 
-    public VBox addReview()
+    public VBox addReview(Pane wrapper)
     {
         VBox vBox = new VBox();
 
@@ -431,8 +447,8 @@ public class GUI extends Application
         Label rating = new Label("Score(out of 100)");
         Label comment = new Label("Comment");
 
-        ComboBox<String> reviewerComboBox = new ComboBox<String>(FXCollections.observableArrayList(reviewerNames));
-        ComboBox<String> gameComboBox = new ComboBox<String>(FXCollections.observableArrayList(gameNames));
+        ComboBox<String> reviewerComboBox = new ComboBox<>(FXCollections.observableArrayList(reviewerNames));
+        ComboBox<String> gameComboBox = new ComboBox<>(FXCollections.observableArrayList(gameNames));
 
         TextField ratingInput = new TextField();
         ratingInput.setMinWidth(200);
@@ -460,12 +476,15 @@ public class GUI extends Application
 
         vBox.getChildren().addAll(reviewerNameBox,gameNameBox,ratingBox,commentBox,enterButton);
 
-        vBox.setSpacing(40);
-        vBox.setMargin(reviewerNameBox,new Insets(30, 10, 10, 40));
-        vBox.setMargin(gameNameBox,new Insets(10, 10, 10, 40));
-        vBox.setMargin(ratingBox,new Insets(10, 10, 10, 40));
-        vBox.setMargin(commentBox,new Insets(10, 10, 10, 40));
+        vBox.setSpacing(20);
+        vBox.setMargin(reviewerNameBox,new Insets(15, 40, 0, 40));
+        vBox.setMargin(gameNameBox,new Insets(10, 40, 0, 40));
+        vBox.setMargin(ratingBox,new Insets(10, 40, 0, 40));
+        vBox.setMargin(commentBox,new Insets(10, 40, 15, 40));
         vBox.setAlignment(Pos.CENTER);
+
+        vBox.prefHeightProperty().bind(wrapper.heightProperty());
+        vBox.prefWidthProperty().bind(wrapper.widthProperty());
 
         return vBox;
     }
