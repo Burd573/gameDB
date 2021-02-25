@@ -1,30 +1,22 @@
 package ui;
 
 import javafx.application.Application;
-import javafx.beans.Observable;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.util.Callback;
-import src.DBObject;
 import src.DBOperations;
+import src.GameInfo;
 
 import java.sql.*;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.*;
 
 
 public class GUI extends Application
@@ -201,12 +193,9 @@ public class GUI extends Application
 
     public TableView showGames()
     {
-        DBOperations games = new DBOperations(conn);
-        ObservableList<ObservableList> data = FXCollections.observableArrayList();
         TableView table = new TableView();
-        DBObject res = games.getGames();
 
-        enterTableData(res,data,table);
+        enterGameTableData(table);
 
         table.setMinHeight(525);
         return table;
@@ -214,12 +203,9 @@ public class GUI extends Application
 
     public TableView showPublishers()
     {
-        DBOperations publishers = new DBOperations(conn);
-        ObservableList<ObservableList> data = FXCollections.observableArrayList();
         TableView table = new TableView();
-        DBObject res = publishers.getPublishers();
 
-        enterTableData(res,data,table);
+        enterPublisherTableData(table);
 
         table.setMinHeight(525);
         return table;
@@ -227,51 +213,75 @@ public class GUI extends Application
 
     public TableView showReviewers()
     {
-        DBOperations reviewers = new DBOperations(conn);
-        ObservableList<ObservableList> data = FXCollections.observableArrayList();
         TableView table = new TableView();
-        DBObject res = reviewers.getReviewers();
 
-        enterTableData(res,data,table);
+        enterReviewerTableData(table);
 
         table.setMinHeight(525);
+        table.setMinWidth(350);
         return table;
     }
 
-    public void enterTableData(DBObject res, ObservableList<ObservableList> data, TableView table)
+    public void enterGameTableData(TableView table)
     {
-        try
-        {
-            int cols = res.getRsmd().getColumnCount();
-            for (int i = 0; i < cols; i++)
-            {
-                final int j = i;
-                TableColumn col = new TableColumn(res.getRsmd().getColumnName(i + 1));
-                col.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ObservableList, String>, ObservableValue<String>>()
-                {
-                    public ObservableValue<String> call(TableColumn.CellDataFeatures<ObservableList, String> param)
-                    {
-                        return new SimpleStringProperty(param.getValue().get(j).toString());
-                    }
-                });
+        DBOperations dbOps = new DBOperations(conn);
+        TableColumn<GameInfo, String> gameNameCol = new TableColumn<>("Game Name");
+        gameNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
 
-                table.getColumns().addAll(col);
-            }
+        TableColumn<GameInfo, String> genreCol = new TableColumn<>("Genre");
+        genreCol.setCellValueFactory(new PropertyValueFactory<>("genre"));
 
-            while (res.getRs().next())
-            {
-                ObservableList<String> row = FXCollections.observableArrayList();
-                for (int i = 1; i <= res.getRsmd().getColumnCount(); i++)
-                {
-                    row.add(res.getRs().getString(i));
-                }
-                data.add(row);
-            }
-            table.setItems(data);
-        } catch(SQLException e)
-        {
-            e.printStackTrace();
-        }
+        TableColumn<GameInfo, Integer> relYearCol = new TableColumn<>("Release Year");
+        relYearCol.setCellValueFactory(new PropertyValueFactory<>("releaseYear"));
+
+        TableColumn<GameInfo, String> pubNameCol = new TableColumn<>("Publisher Name");
+        pubNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+
+        TableColumn<GameInfo, Double> ratingCol = new TableColumn<>("Average Rating");
+        ratingCol.setCellValueFactory(new PropertyValueFactory<>("AvgReview"));
+
+        table.getColumns().addAll(gameNameCol,genreCol,relYearCol,pubNameCol,ratingCol);
+        table.getItems().addAll(dbOps.getGames());
+
+    }
+
+    public void enterPublisherTableData(TableView table)
+    {
+        DBOperations dbOps = new DBOperations(conn);
+        TableColumn<GameInfo, String> pubNameCol = new TableColumn<>("Publisher Name");
+        pubNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+
+        TableColumn<GameInfo, String> cityCol = new TableColumn<>("City");
+        cityCol.setCellValueFactory(new PropertyValueFactory<>("City"));
+
+        TableColumn<GameInfo, String> countryCol = new TableColumn<>("Country");
+        countryCol.setCellValueFactory(new PropertyValueFactory<>("Country"));
+
+        TableColumn<GameInfo, String> stateCol = new TableColumn<>("State");
+        stateCol.setCellValueFactory(new PropertyValueFactory<>("State"));
+
+        TableColumn<GameInfo, Double> avgRatingCol = new TableColumn<>("Average Game Rating");
+        avgRatingCol.setCellValueFactory(new PropertyValueFactory<>("AvgRating"));
+
+        table.getColumns().addAll(pubNameCol,cityCol,countryCol,stateCol,avgRatingCol);
+        table.getItems().addAll(dbOps.getPublishers());
+
+    }
+
+    public void enterReviewerTableData(TableView table)
+    {
+        DBOperations dbOps = new DBOperations(conn);
+        TableColumn<GameInfo, String> reviewerNameCol = new TableColumn<>("Reviewer Name");
+        reviewerNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+
+        TableColumn<GameInfo, Double> avgReviewCol = new TableColumn<>("Average Review");
+        avgReviewCol.setCellValueFactory(new PropertyValueFactory<>("avgRating"));
+
+        TableColumn<GameInfo, Integer> numReviewsCol = new TableColumn<>("Number of Reviews");
+        numReviewsCol.setCellValueFactory(new PropertyValueFactory<>("numReviews"));
+
+        table.getColumns().addAll(reviewerNameCol,avgReviewCol,numReviewsCol);
+        table.getItems().addAll(dbOps.getReviewers());
     }
 
     public VBox addGame()
@@ -282,20 +292,8 @@ public class GUI extends Application
         Label releaseYear = new Label("Release Year");
         Label pubName = new Label("Publisher");
 
-        DBOperations publishers = new DBOperations(conn);
-        DBObject res = publishers.getPublisherNames();
-        LinkedList<String> names = new LinkedList<>();
-        try
-        {
-            while (res.getRs().next())
-            {
-                names.add(res.getRs().getString(1));
-            }
-
-        } catch (SQLException e)
-        {
-            e.printStackTrace();
-        }
+        DBOperations dbOps = new DBOperations(conn);
+        List<String> names = dbOps.getPublisherNames();
 
         TextField gameNameInput = new TextField();
         gameNameInput.setMinWidth(200);
@@ -306,9 +304,7 @@ public class GUI extends Application
         TextField releaseYearInput = new TextField();
         releaseYearInput.setMinWidth(200);
 
-//        TextField pubNameInput = new TextField();
-//        pubNameInput.setMinWidth(200);
-        ComboBox comboBox = new ComboBox(FXCollections.observableList(names));
+        ComboBox<String> comboBox = new ComboBox<String>(FXCollections.observableArrayList(names));
 
         VBox nameBox = new VBox();
         nameBox.getChildren().addAll(gameName,gameNameInput);
@@ -324,6 +320,10 @@ public class GUI extends Application
 
         Button enterButton = new Button("Enter");
         enterButton.setMinWidth(50);
+
+        enterButton.setOnAction(e -> {
+            dbOps.addGame(comboBox.getValue(),gameGenreInput.getText(),gameNameInput.getText(),releaseYearInput.getText());
+        });
 
         vbox.getChildren().addAll(nameBox,genreBox,yearBox,pubBox,enterButton);
         vbox.setSpacing(40);
