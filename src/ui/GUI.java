@@ -346,6 +346,8 @@ public class GUI extends Application
         Label pubState = new Label("Publisher State");
         Label pubCountry = new Label("Publisher Country");
 
+        DBOperations dbOps = new DBOperations(conn);
+
         TextField pubNameInput = new TextField();
         pubNameInput.setMinWidth(200);
 
@@ -372,6 +374,9 @@ public class GUI extends Application
 
         Button enterButton = new Button("Enter");
         enterButton.setMinWidth(50);
+        enterButton.setOnAction(e -> {
+            dbOps.addPublisher(pubNameInput.getText(),pubCityInput.getText(),pubStateInput.getText(),pubCountryInput.getText());
+        });
 
         vbox.getChildren().addAll(nameBox,cityBox,stateBox,countryBox,enterButton);
 
@@ -388,6 +393,9 @@ public class GUI extends Application
     public VBox addReviewer()
     {
         VBox vbox = new VBox();
+
+        DBOperations dbOps = new DBOperations(conn);
+
         Label reviewerName = new Label("Reviewer Name");
 
         TextField reviewerNameInput = new TextField();
@@ -398,6 +406,10 @@ public class GUI extends Application
 
         Button enterButton = new Button("Enter");
         enterButton.setMinWidth(50);
+
+        enterButton.setOnAction(e -> {
+            dbOps.addReviewer(reviewerNameInput.getText());
+        });
 
         vbox.getChildren().addAll(nameBox,enterButton);
         vbox.setSpacing(30);
@@ -410,16 +422,17 @@ public class GUI extends Application
     {
         VBox vBox = new VBox();
 
+        DBOperations dbOps = new DBOperations(conn);
+        List<String> reviewerNames = dbOps.getReviewerNames();
+        List<String> gameNames = dbOps.getGameNames();
+
         Label reviewerName = new Label("Reviewer Name");
         Label gameName = new Label("Game Name");
         Label rating = new Label("Score(out of 100)");
         Label comment = new Label("Comment");
 
-        TextField reviewerNameInput = new TextField();
-        reviewerNameInput.setMinWidth(200);
-
-        TextField gameNameInput = new TextField();
-        gameNameInput.setMinWidth(200);
+        ComboBox<String> reviewerComboBox = new ComboBox<String>(FXCollections.observableArrayList(reviewerNames));
+        ComboBox<String> gameComboBox = new ComboBox<String>(FXCollections.observableArrayList(gameNames));
 
         TextField ratingInput = new TextField();
         ratingInput.setMinWidth(200);
@@ -428,10 +441,10 @@ public class GUI extends Application
         commentInput.setMinWidth(200);
 
         VBox reviewerNameBox = new VBox();
-        reviewerNameBox.getChildren().addAll(reviewerName,reviewerNameInput);
+        reviewerNameBox.getChildren().addAll(reviewerName,reviewerComboBox);
 
         VBox gameNameBox = new VBox();
-        gameNameBox.getChildren().addAll(gameName,gameNameInput);
+        gameNameBox.getChildren().addAll(gameName,gameComboBox);
 
         VBox ratingBox = new VBox();
         ratingBox.getChildren().addAll(rating,ratingInput);
@@ -441,6 +454,9 @@ public class GUI extends Application
 
         Button enterButton = new Button("Enter");
         enterButton.setMinWidth(50);
+        enterButton.setOnAction(e -> {
+            dbOps.addReview(reviewerComboBox.getValue(),gameComboBox.getValue(),Double.parseDouble(ratingInput.getText()),commentInput.getText());
+        });
 
         vBox.getChildren().addAll(reviewerNameBox,gameNameBox,ratingBox,commentBox,enterButton);
 

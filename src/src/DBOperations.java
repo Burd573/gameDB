@@ -67,6 +67,48 @@ public class DBOperations
         return publishers;
     }
 
+    public List<String> getReviewerNames()
+    {
+        List<String> reviewers = new ArrayList<>();
+        try
+        {
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery("SELECT name FROM reviewer;");
+
+            while(rs.next())
+            {
+                String pubName = rs.getString("name");
+                reviewers.add(pubName);
+            }
+        } catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+
+        return reviewers;
+    }
+
+    public List<String> getGameNames()
+    {
+        List<String> games = new ArrayList<>();
+        try
+        {
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery("SELECT name FROM game;");
+
+            while(rs.next())
+            {
+                String pubName = rs.getString("name");
+                games.add(pubName);
+            }
+        } catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+
+        return games;
+    }
+
     public List<PublisherInfo> getPublishers()
     {
         List<PublisherInfo> publishers = new ArrayList<>();
@@ -74,10 +116,10 @@ public class DBOperations
         {
             stmt = conn.createStatement();
             rs = stmt.executeQuery("SELECT publisher.name, city, state, county, AVG(rating)\n" +
-                    "FROM game\n" +
-                    "JOIN publisher\n" +
+                    "FROM publisher\n" +
+                    "LEFT JOIN game\n" +
                     "\tON game.pub_id = publisher.pub_id\n" +
-                    "JOIN review\n" +
+                    "LEFT JOIN review\n" +
                     "\tON game.game_id = review.game_id\n" +
                     "GROUP BY publisher.name");
             while(rs.next())
@@ -108,7 +150,7 @@ public class DBOperations
             stmt = conn.createStatement();
             rs = stmt.executeQuery("SELECT reviewer.name, AVG(rating), COUNT(rating)\n" +
                     "FROM reviewer\n" +
-                    "JOIN review\n" +
+                    "LEFT JOIN review\n" +
                     "\tON review.reviewer_id = reviewer.reviewer_id\n" +
                     "GROUP BY reviewer.reviewer_id");
             while(rs.next())
@@ -149,6 +191,87 @@ public class DBOperations
 
             conn.commit();
 
+        } catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public void addPublisher(String name, String city, String state, String country)
+    {
+        try
+        {
+            //Do not commit to the database until specified
+            conn.setAutoCommit(false);
+
+            //prepared statement to update the actors of a specified film
+            pstmt = conn.prepareStatement("INSERT INTO publisher(name, city, state, county) VALUES(?,?,?,?);");
+            pstmt.setString(1,name);
+            pstmt.setString(2,city);
+            pstmt.setString(3,state);
+            pstmt.setString(4,country);
+
+            if (pstmt.executeUpdate() > 0)
+            {
+                System.out.println("SUCCESS");
+            }
+
+            conn.commit();
+
+        } catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public void addReviewer(String name)
+    {
+        try
+        {
+            //Do not commit to the database until specified
+            conn.setAutoCommit(false);
+
+            //prepared statement to update the actors of a specified film
+            pstmt = conn.prepareStatement("INSERT INTO reviewer(name) VALUES(?);");
+            pstmt.setString(1,name);
+
+            if (pstmt.executeUpdate() > 0)
+            {
+                System.out.println("SUCCESS");
+            }
+
+            conn.commit();
+
+        } catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public void addReview(String reviewerName, String gameName, Double score, String comment)
+    {
+        try
+        {
+            //Do not commit to the database until specified
+            conn.setAutoCommit(false);
+
+            //prepared statement to update the actors of a specified film
+            pstmt = conn.prepareStatement("INSERT INTO review (reviewer_id, game_id, rating, comment)\n" +
+                    "VALUES(" +
+                    "(SELECT reviewer_id FROM reviewer WHERE reviewer.name = ?), " +
+                    "(SELECT game_id FROM game WHERE game.name = ?)," +
+                    "?,?);");
+            pstmt.setString(1, reviewerName);
+            pstmt.setString(2, gameName);
+            pstmt.setDouble(3, score);
+            pstmt.setString(4, comment);
+
+            if (pstmt.executeUpdate() > 0)
+            {
+                System.out.println("SUCCESS");
+            }
+
+            conn.commit();
         } catch(SQLException e)
         {
             e.printStackTrace();
