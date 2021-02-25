@@ -1,4 +1,4 @@
-### JavaFX Setup with IntelliJ
+## JavaFX Setup with IntelliJ & Add Driver
 
 Documentation: https://openjfx.io/openjfx-docs/
 
@@ -20,10 +20,19 @@ Window:       --module-path "\path\to\javafx-sdk-11.0.1\lib" --add-modules javaf
 
 4. Add Driver: File -> Project Structure -> Modules -> Add -> JARS or Directories... -> select your sql version .Jar file
 
-5. Run project
+5. Run -> Run 'Main'
 
 If Error 'ONLY_FULL_GROUP_BY' pop up.
 Run this query in mysql to disable ONLY_FULL_GROUP_BY
 ```
 SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));
 ```
+
+## Application Features
+- [x] GUI - User inputs URL, DB username, password, driver (game_db need to be ready in mysql)
+- [x] List All Games, List All Publisher, List All Reviewers.
+- [ ] Filter Games by genre, rating, platform. (Query 1~3).
+- [ ] Filter Reviews by Reviewers name (Query 4).
+- [ ] Add a Game, Add a Publisher, Add a Reviewer, Add a Review (Query 5).
+- [ ] Update A Game (Query 6).
+- [ ] Delete A Game (Query 7).
