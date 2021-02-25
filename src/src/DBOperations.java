@@ -1,5 +1,7 @@
 package src;
 
+import com.sun.media.jfxmediaimpl.platform.Platform;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -276,6 +278,77 @@ public class DBOperations
         {
             e.printStackTrace();
         }
+    }
+
+    public List<GameReviews> viewGameReviews(String name)
+    {
+        List<GameReviews> gameReviews = new ArrayList<>();
+        try
+        {
+            //Do not commit to the database until specified
+            conn.setAutoCommit(false);
+
+            //prepared statement to update the actors of a specified film
+            pstmt = conn.prepareStatement("SELECT reviewer.name, rating, comment\n" +
+                    "FROM reviewer\n" +
+                    "JOIN review\n" +
+                    "ON reviewer.reviewer_id = review.reviewer_id\n" +
+                    "JOIN game\n" +
+                    "ON review.game_id = game.game_id\n" +
+                    "WHERE game.name = ?");
+            pstmt.setString(1, name);
+            rs = pstmt.executeQuery();
+
+            while (rs.next())
+            {
+                String reviewerName = rs.getString("name");
+                Double rating = rs.getDouble("rating");
+                String comment = rs.getString("comment");
+
+                GameReviews reviews = new GameReviews(reviewerName, rating, comment);
+                gameReviews.add(reviews);
+            }
+
+        } catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        return gameReviews;
+    }
+
+    public List<GamePlatforms> getGamePlatform(String name)
+    {
+        List<GamePlatforms> platforms = new ArrayList<>();
+        try
+        {
+            //Do not commit to the database until specified
+            conn.setAutoCommit(false);
+
+            //prepared statement to update the actors of a specified film
+            pstmt = conn.prepareStatement("SELECT platform.name \n" +
+                    "FROM game\n" +
+                    "JOIN plays_on\n" +
+                    " ON game.game_id = plays_on.game_id\n" +
+                    "JOIN platform \n" +
+                    "\tON platform_id = plays_on.pub_id\n" +
+                    "WHERE game.game_id = " +
+                    "(SELECT game.game_id from game where name = ?);");
+            pstmt.setString(1, name);
+            rs = pstmt.executeQuery();
+
+            while (rs.next())
+            {
+                String platName = rs.getString("name");
+
+
+                GamePlatforms plat = new GamePlatforms(platName);
+                platforms.add(plat);
+            }
+        } catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        return platforms;
     }
 
     public void close(Statement stmt, ResultSet rs, PreparedStatement pstmt)

@@ -14,6 +14,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import src.DBOperations;
 import src.GameInfo;
+import src.GamePlatforms;
+import src.GameReviews;
 
 import java.sql.*;
 import java.util.*;
@@ -113,7 +115,9 @@ public class GUI extends Application
     {
         HBox hbox = new HBox();
         hbox.setPrefWidth(600);
-        VBox vBox = new VBox();
+        VBox col1Buttons = new VBox();
+        VBox col2Buttons = new VBox();
+        HBox buttons = new HBox();
         Pane wrapperPane = new Pane();
         wrapperPane.prefWidthProperty().bind(hbox.widthProperty());
 
@@ -124,30 +128,56 @@ public class GUI extends Application
         stage.setScene(scene);
 
         Button showGamesButton = new Button("List Games");
-        showGamesButton.setMinSize(200,50);
+        showGamesButton.setMinSize(100,50);
 
         Button addGamesButton = new Button("Add Game");
-        addGamesButton.setMinSize(200,50);
+        addGamesButton.setMinSize(100,50);
 
         Button showPublisherButton = new Button("List Publishers");
-        showPublisherButton.setMinSize(200,50);
+        showPublisherButton.setMinSize(100,50);
 
         Button addPublisherButton = new Button("add Publisher");
-        addPublisherButton.setMinSize(200,50);
+        addPublisherButton.setMinSize(100,50);
 
         Button showReviewersButton = new Button("List Reviewers");
-        showReviewersButton.setMinSize(200,50);
+        showReviewersButton.setMinSize(100,50);
 
         Button addReviewersButton = new Button("Add Reviewer");
-        addReviewersButton.setMinSize(200,50);
+        addReviewersButton.setMinSize(100,50);
 
         Button addReviewButton = new Button("Add Review");
-        addReviewButton.setMinSize(200,50);
+        addReviewButton.setMinSize(100,50);
 
-        vBox.getChildren().addAll(showGamesButton,addGamesButton,showPublisherButton,
-                addPublisherButton,showReviewersButton,addReviewersButton,addReviewButton);
+        Button gameInfoButton = new Button("Game Info");
+        gameInfoButton.setMinSize(100,50);
 
-        hbox.getChildren().addAll(vBox,wrapperPane);
+        Button platformInfoButton = new Button("Platform Info");
+        platformInfoButton.setMinSize(100,50);
+
+        Button publisherInfoButton = new Button("Publisher Info");
+        publisherInfoButton.setMinSize(100,50);
+
+        Button reviewerInfoButton = new Button("Reviewer Info");
+        reviewerInfoButton.setMinSize(100,50);
+
+        Button genreInfoButton = new Button("Genre Info");
+        genreInfoButton.setMinSize(100,50);
+
+        Button editDataButton = new Button("Edit Data");
+        editDataButton.setMinSize(100,50);
+
+        Button deleteDataButton = new Button("Remove Data");
+        deleteDataButton.setMinSize(100,50);
+
+        col1Buttons.getChildren().addAll(showGamesButton, gameInfoButton, addGamesButton,showPublisherButton, publisherInfoButton,
+                addPublisherButton,deleteDataButton);
+
+        col2Buttons.getChildren().addAll(showReviewersButton,reviewerInfoButton,addReviewersButton,addReviewButton,platformInfoButton,
+                genreInfoButton,editDataButton);
+
+        buttons.getChildren().addAll(col1Buttons,col2Buttons);
+
+        hbox.getChildren().addAll(buttons,wrapperPane);
 
         showGamesButton.setOnAction(e -> {
             stage.sizeToScene();
@@ -191,6 +221,11 @@ public class GUI extends Application
             wrapperPane.getChildren().add(addReview(wrapperPane));
         });
 
+        gameInfoButton.setOnAction(e -> {
+            stage.sizeToScene();
+            wrapperPane.getChildren().clear();
+            wrapperPane.getChildren().add(selectGame(wrapperPane));
+        });
         stage.show();
     }
 
@@ -405,6 +440,7 @@ public class GUI extends Application
     public VBox addReviewer(Pane wrapper)
     {
         VBox vbox = new VBox();
+        Pane wrapperPane = new Pane();
 
         DBOperations dbOps = new DBOperations(conn);
 
@@ -489,4 +525,115 @@ public class GUI extends Application
         return vBox;
     }
 
+    public VBox selectGame(Pane wrapper)
+    {
+        VBox getSelection = new VBox();
+
+        DBOperations dbOps = new DBOperations(conn);
+        List<String> gameNames = dbOps.getGameNames();
+        Label gameName = new Label("Select Game You Wish to View");
+        ComboBox<String> gameComboBox = new ComboBox<>(FXCollections.observableArrayList(gameNames));
+
+        Button enterButton = new Button("Enter");
+        enterButton.setMinWidth(50);
+
+        enterButton.setOnAction(e -> {
+            getSelection.getChildren().clear();
+            getSelection.getChildren().add(gameInfo(wrapper,gameComboBox.getValue()));
+        });
+
+        VBox nameBox = new VBox();
+        nameBox.getChildren().addAll(gameName,gameComboBox);
+
+        getSelection.getChildren().addAll(nameBox,enterButton);
+        getSelection.setSpacing(30);
+        getSelection.setMargin(nameBox,new Insets(30,40,10,40));
+        getSelection.setAlignment(Pos.CENTER);
+
+        getSelection.prefHeightProperty().bind(wrapper.heightProperty());
+        getSelection.prefWidthProperty().bind(wrapper.widthProperty());
+
+        return getSelection;
+    }
+
+    public VBox gameInfo(Pane wrapper,String name)
+    {
+        VBox ret = new VBox();
+        HBox select = new HBox();
+        String reviews = "Reviews";
+        String platforms = "Platforms";
+
+        Label choiceSelection = new Label("Select Desired Information");
+        ComboBox<String> choice = new ComboBox<>();
+        choice.getItems().addAll(reviews,platforms);
+
+        Button okButton = new Button("OK");
+        select.getChildren().add(choiceSelection);
+        select.getChildren().add(choice);
+        select.getChildren().add(okButton);
+
+        okButton.setOnAction(e -> {
+            if(choice.getValue().equals(reviews))
+            {
+                ret.getChildren().clear();
+                ret.getChildren().addAll(showGameReviews(wrapper,name));
+            }
+
+            if(choice.getValue().equals(platforms))
+            {
+                ret.getChildren().clear();
+                ret.getChildren().addAll(showGamePlatforms(wrapper,name));
+            }
+        });
+        ret.getChildren().add(select);
+        return ret;
+    }
+
+    public TableView showGameReviews(Pane wrapper,String name)
+    {
+        TableView table = new TableView();
+
+        enterGameReviewTableData(table,name);
+
+        table.prefHeightProperty().bind(wrapper.heightProperty());
+        table.prefWidthProperty().bind(wrapper.widthProperty());
+        return table;
+    }
+
+    public void enterGameReviewTableData(TableView table,String name)
+    {
+        DBOperations dbOps = new DBOperations(conn);
+        TableColumn<GameReviews, String> reviewerNameCol = new TableColumn<>("Reviewer Name");
+        reviewerNameCol.setCellValueFactory(new PropertyValueFactory<>("reviewerName"));
+
+        TableColumn<GameReviews, Double> ratingCol = new TableColumn<>("Rating");
+        ratingCol.setCellValueFactory(new PropertyValueFactory<>("Score"));
+
+        TableColumn<GameReviews, String> commentCol = new TableColumn<>("Comment");
+        commentCol.setCellValueFactory(new PropertyValueFactory<>("Comment"));
+
+        table.getColumns().addAll(reviewerNameCol,ratingCol,commentCol);
+        table.getItems().addAll(dbOps.viewGameReviews(name));
+    }
+
+    public TableView showGamePlatforms(Pane wrapper,String name)
+    {
+        TableView table = new TableView();
+
+        enterGamePlatformTableData(table,name);
+
+        table.prefHeightProperty().bind(wrapper.heightProperty());
+        table.prefWidthProperty().bind(wrapper.widthProperty());
+        return table;
+    }
+
+    public void enterGamePlatformTableData(TableView table,String name)
+    {
+        DBOperations dbOps = new DBOperations(conn);
+        TableColumn<GamePlatforms, String> platformNameCol = new TableColumn<>("Platform Name");
+        platformNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+
+        table.getColumns().addAll(platformNameCol);
+        table.getItems().addAll(dbOps.getGamePlatform(name));
+    }
 }
