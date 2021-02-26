@@ -1,12 +1,12 @@
 package src;
 
-public class ReviewerInfo
+public class ReviewerList
 {
     String name;
     Double avgRating;
     Integer numReviews;
 
-    public ReviewerInfo(String name, Double avgRating, Integer numReviews)
+    public ReviewerList(String name, Double avgRating, Integer numReviews)
     {
         this.name = name;
         this.avgRating = avgRating;

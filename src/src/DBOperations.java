@@ -19,9 +19,9 @@ public class DBOperations
         pstmt = null;
     }
 
-    public List<GameInfo> getGames()
+    public List<GameList> getGames()
     {
-        List<GameInfo> games = new ArrayList<>();
+        List<GameList> games = new ArrayList<>();
         try
         {
             stmt = conn.createStatement();
@@ -35,7 +35,7 @@ public class DBOperations
                 String pubName = rs.getString("name");
                 Double avgRating = rs.getDouble("AVG(rating)");
 
-                GameInfo game = new GameInfo(gameName, genre, relYear, pubName, avgRating);
+                GameList game = new GameList(gameName, genre, relYear, pubName, avgRating);
                 games.add(game);
             }
 
@@ -130,9 +130,30 @@ public class DBOperations
         return games;
     }
 
-    public List<PublisherInfo> getPublishers()
+    public List<String> getGenreNames()
     {
-        List<PublisherInfo> publishers = new ArrayList<>();
+        List<String> genres = new ArrayList<>();
+        try
+        {
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery("SELECT DISTINCT genre FROM game;");
+
+            while(rs.next())
+            {
+                String genreName = rs.getString("genre");
+                genres.add(genreName);
+            }
+        } catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+
+        return genres;
+    }
+
+    public List<PublisherList> getPublishers()
+    {
+        List<PublisherList> publishers = new ArrayList<>();
         try
         {
             stmt = conn.createStatement();
@@ -151,7 +172,7 @@ public class DBOperations
                 String country = rs.getString("county");
                 Double avgRating = rs.getDouble("AVG(rating)");
 
-                PublisherInfo pub = new PublisherInfo(pubName, city, state, country, avgRating);
+                PublisherList pub = new PublisherList(pubName, city, state, country, avgRating);
                 publishers.add(pub);
             }
         } catch(SQLException e)
@@ -163,9 +184,9 @@ public class DBOperations
 
 
 
-    public List<ReviewerInfo> getReviewers()
+    public List<ReviewerList> getReviewers()
     {
-        List<ReviewerInfo> reviewers = new ArrayList<>();
+        List<ReviewerList> reviewers = new ArrayList<>();
         try
         {
             stmt = conn.createStatement();
@@ -180,7 +201,7 @@ public class DBOperations
                 Double avgRating = rs.getDouble("AVG(rating)");
                 Integer numReviews = rs.getInt("COUNT(rating)");
 
-                ReviewerInfo rev = new ReviewerInfo(reviewerName,avgRating,numReviews);
+                ReviewerList rev = new ReviewerList(reviewerName,avgRating,numReviews);
                 reviewers.add(rev);
             }
         } catch(SQLException e)
@@ -299,9 +320,9 @@ public class DBOperations
         }
     }
 
-    public List<GameReviews> viewGameReviews(String name)
+    public List<GameReviewsInfo> viewGameReviews(String name)
     {
-        List<GameReviews> gameReviews = new ArrayList<>();
+        List<GameReviewsInfo> gameReviews = new ArrayList<>();
         try
         {
             //Do not commit to the database until specified
@@ -324,7 +345,7 @@ public class DBOperations
                 Double rating = rs.getDouble("rating");
                 String comment = rs.getString("comment");
 
-                GameReviews reviews = new GameReviews(reviewerName, rating, comment);
+                GameReviewsInfo reviews = new GameReviewsInfo(reviewerName, rating, comment);
                 gameReviews.add(reviews);
             }
 
@@ -335,9 +356,9 @@ public class DBOperations
         return gameReviews;
     }
 
-    public List<PlatformGames> getPlatformGames(String name)
+    public List<PlatformGamesInfo> getPlatformGames(String name)
     {
-        List<PlatformGames> platforms = new ArrayList<>();
+        List<PlatformGamesInfo> platforms = new ArrayList<>();
         try
         {
             //Do not commit to the database until specified
@@ -356,18 +377,81 @@ public class DBOperations
             while (rs.next())
             {
                 String platName = rs.getString("name");
-                PlatformGames plat = new PlatformGames(platName);
+                PlatformGamesInfo plat = new PlatformGamesInfo(platName);
                 platforms.add(plat);
             }
         } catch (SQLException e)
         {
             e.printStackTrace();
         }
-        for(PlatformGames plat: platforms)
-        {
-            plat.getName();
-        }
         return platforms;
+    }
+
+    public List<PublisherInfo> getPublisherGames(String name)
+    {
+        List<PublisherInfo> games = new ArrayList<>();
+        try
+        {
+            //Do not commit to the database until specified
+            conn.setAutoCommit(false);
+
+            //prepared statement to update the actors of a specified film
+            pstmt = conn.prepareStatement("SELECT game.name, AVG(rating) \n" +
+                    "FROM game\n" + "JOIN review\n" +
+                    "ON game.game_id = review.game_id\n" +
+                    "WHERE game.pub_id = (SELECT pub_id \n" +
+                    "FROM publisher\n" +
+                    "WHERE publisher.name = ?)\n" +
+                    "GROUP BY game.name;");
+            pstmt.setString(1, name);
+            rs = pstmt.executeQuery();
+
+            while (rs.next())
+            {
+                String gameName = rs.getString("name");
+                Double avgRating = rs.getDouble("AVG(rating)");
+
+                PublisherInfo pub = new PublisherInfo(gameName,avgRating);
+                games.add(pub);
+            }
+        } catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        return games;
+    }
+
+    public List<GenreInfo> getGenreInfo(String genreName)
+    {
+        List<GenreInfo> genre = new ArrayList<>();
+        try
+        {
+            //Do not commit to the database until specified
+            conn.setAutoCommit(false);
+
+            //prepared statement to update the actors of a specified film
+            pstmt = conn.prepareStatement("SELECT game.name, AVG(rating)\n" +
+                    "FROM game\n" +
+                    "JOIN review\n" +
+                    "ON game.game_id = review.game_id\n" +
+                    "WHERE genre = ?\n" +
+                    "GROUP BY game.name;");
+            pstmt.setString(1, genreName);
+            rs = pstmt.executeQuery();
+
+            while (rs.next())
+            {
+                String gameName = rs.getString("name");
+                Double avgRating = rs.getDouble("AVG(rating)");
+
+                GenreInfo genreInfo = new GenreInfo(gameName,avgRating);
+                genre.add(genreInfo);
+            }
+        } catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        return genre;
     }
 
     public void close(Statement stmt, ResultSet rs, PreparedStatement pstmt)
