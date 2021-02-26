@@ -365,12 +365,10 @@ public class DBOperations
             conn.setAutoCommit(false);
 
             //prepared statement
-            pstmt = conn.prepareStatement("SELECT game.name FROM game \n" +
-                    "JOIN plays_on \n" +
-                    "ON game.game_id = plays_on.game_id\n" +
-                    "JOIN platform\n" +
-                    "ON platform.platform_id = plays_on.pub_id\n" +
-                    "where platform.name = ?;");
+            pstmt = conn.prepareStatement("SELECT game.name as gameName, platform.name FROM game \n" +
+                    "JOIN plays_on ON game.game_id = plays_on.game_id\n" +
+                    "JOIN platform ON platform.platform_id = plays_on.pub_id\n" +
+                    "WHERE game.name = ?");
             pstmt.setString(1, name);
             rs = pstmt.executeQuery();
 
@@ -385,6 +383,40 @@ public class DBOperations
             e.printStackTrace();
         }
         return platforms;
+    }
+
+    public List<GenreInfo> getPlatformInfoGames(String name)
+    {
+        List<GenreInfo> games = new ArrayList<>();
+        try
+        {
+            //Do not commit to the database until specified
+            conn.setAutoCommit(false);
+
+            //prepared statement
+            pstmt = conn.prepareStatement("SELECT game.name, AVG(rating) FROM game\n" +
+                    "JOIN review ON game.game_id = review.game_id\n" +
+                    "JOIN plays_on ON game.game_id = plays_on.game_id\n" +
+                    "JOIN platform ON platform.platform_id = plays_on.pub_id\n" +
+                    "WHERE platform.name = ?\n" +
+                    "GROUP BY game.name;");
+            pstmt.setString(1, name);
+            rs = pstmt.executeQuery();
+
+            while (rs.next())
+            {
+                String gameName = rs.getString("name");
+                Double avgRating = rs.getDouble("AVG(rating)");
+
+                GenreInfo game = new GenreInfo(gameName,avgRating);
+                games.add(game);
+
+            }
+        } catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        return games;
     }
 
     public List<PublisherInfo> getPublisherGames(String name)

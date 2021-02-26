@@ -962,10 +962,13 @@ public class GUI extends Application
     {
         DBOperations dbOps = new DBOperations(conn);
         TableColumn<PlatformGamesInfo, String> gameNameCol = new TableColumn<>("Game Name");
-        gameNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+        gameNameCol.setCellValueFactory(new PropertyValueFactory<>("GameName"));
 
-        table.getColumns().addAll(gameNameCol);
-        table.getItems().addAll(dbOps.getPlatformGames(name));
+        TableColumn<PlatformGamesInfo, String> ratingCol = new TableColumn<>("Average Rating");
+        ratingCol.setCellValueFactory(new PropertyValueFactory<>("AvgReview"));
+
+        table.getColumns().addAll(gameNameCol,ratingCol);
+        table.getItems().addAll(dbOps.getPlatformInfoGames(name));
     }
 
     public VBox publisherInfo(Pane wrapper)
@@ -1057,7 +1060,7 @@ public class GUI extends Application
         TableColumn<GenreInfo, String> genreNameCol = new TableColumn<>("Game Name");
         genreNameCol.setCellValueFactory(new PropertyValueFactory<>("GameName"));
 
-        TableColumn<PublisherInfo, String> ratingCol = new TableColumn<>("Average Rating");
+        TableColumn<GenreInfo, String> ratingCol = new TableColumn<>("Average Rating");
         ratingCol.setCellValueFactory(new PropertyValueFactory<>("AvgReview"));
 
         table.getColumns().addAll(genreNameCol,ratingCol);
