@@ -2,59 +2,17 @@ package src;
 
 public class PublisherInfo
 {
-     String name;
-     String city;
-     String state;
-     String country;
-     Double avgRating;
+    String gameName;
+    Double avgRating;
 
-    public PublisherInfo(String name, String city, String state, String country, Double avgRating)
+    public String getGameName()
     {
-        this.name = name;
-        this.city = city;
-        this.state = state;
-        this.country = country;
-        this.avgRating = avgRating;
+        return gameName;
     }
 
-    public String getState()
+    public void setGameName(String gameName)
     {
-        return state;
-    }
-
-    public void setState(String state)
-    {
-        this.state = state;
-    }
-
-    public String getName()
-    {
-        return name;
-    }
-
-    public void setName(String name)
-    {
-        this.name = name;
-    }
-
-    public String getCity()
-    {
-        return city;
-    }
-
-    public void setCity(String city)
-    {
-        this.city = city;
-    }
-
-    public String getCountry()
-    {
-        return country;
-    }
-
-    public void setCountry(String country)
-    {
-        this.country = country;
+        this.gameName = gameName;
     }
 
     public Double getAvgRating()
@@ -64,6 +22,12 @@ public class PublisherInfo
 
     public void setAvgRating(Double avgRating)
     {
+        this.avgRating = avgRating;
+    }
+
+    public PublisherInfo(String gameName, Double avgRating)
+    {
+        this.gameName = gameName;
         this.avgRating = avgRating;
     }
 }

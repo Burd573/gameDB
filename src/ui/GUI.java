@@ -280,6 +280,12 @@ public class GUI extends Application
             wrapperPane.getChildren().add(publisherInfo(wrapperPane));
         });
 
+        reviewerInfoButton.setOnAction( e -> {
+            stage.sizeToScene();
+            wrapperPane.getChildren().clear();
+            wrapperPane.getChildren().add(reviewerInfo(wrapperPane));
+        });
+
         genreInfoButton.setOnAction( e -> {
             stage.sizeToScene();
             wrapperPane.getChildren().clear();
@@ -388,25 +394,25 @@ public class GUI extends Application
     public void enterPublisherTableData(TableView table)
     {
         DBOperations dbOps = new DBOperations(conn);
-        TableColumn<GameList, String> pubNameCol = new TableColumn<>("Publisher Name");
-        pubNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+        TableColumn<PublisherList, String> pubNameCol = new TableColumn<>("Publisher Name");
+        pubNameCol.setCellValueFactory(new PropertyValueFactory<>("pubName"));
 
-        TableColumn<GameList, String> cityCol = new TableColumn<>("City");
+        TableColumn<PublisherList, String> cityCol = new TableColumn<>("City");
         cityCol.setCellValueFactory(new PropertyValueFactory<>("City"));
 
-        TableColumn<GameList, String> countryCol = new TableColumn<>("Country");
+        TableColumn<PublisherList, String> countryCol = new TableColumn<>("Country");
         countryCol.setCellValueFactory(new PropertyValueFactory<>("Country"));
 
-        TableColumn<GameList, String> stateCol = new TableColumn<>("State");
+        TableColumn<PublisherList, String> stateCol = new TableColumn<>("State");
         //this uses the getter method getState from PublisherInfo Object so it must
         //be syntax-specific. Cannot use pub_state or state because it looks
         //specifically for getState from PublisherInfo Object
         stateCol.setCellValueFactory(new PropertyValueFactory<>("State"));
 
-        TableColumn<GameList, Double> avgRatingCol = new TableColumn<>("Average Game Rating");
+        TableColumn<PublisherList, Double> avgRatingCol = new TableColumn<>("Average Game Rating");
         avgRatingCol.setCellValueFactory(new PropertyValueFactory<>("AvgRating"));
 
-        table.getColumns().addAll(pubNameCol,cityCol,countryCol,stateCol,avgRatingCol);
+        table.getColumns().addAll(pubNameCol,cityCol,stateCol,countryCol,avgRatingCol);
         table.getItems().addAll(dbOps.getPublishers());
 
     }
@@ -827,6 +833,37 @@ public class GUI extends Application
     }
 
     /**
+     * Menu to select a reviewer. We can view all reviews made by that reviewer
+     * selected reviewer name
+     *
+     * @param wrapper wrapper class the vbox is placed into
+     * @return vbox containing the menu
+     */
+    public VBox reviewerInfo(Pane wrapper)
+    {
+        VBox ret = new VBox();
+        HBox select = new HBox();
+
+        DBOperations dbOps = new DBOperations(conn);
+        List<String> reviewerNames = dbOps.getReviewerNames();
+
+        Label choiceSelection = new Label("Select Reviewer");
+        ComboBox<String> choice = new ComboBox<>(FXCollections.observableArrayList(reviewerNames));
+
+        Button okButton = new Button("OK");
+
+        select.getChildren().addAll(choiceSelection,choice,okButton);
+
+        okButton.setOnAction(e -> {
+            ret.getChildren().clear();
+            ret.getChildren().addAll(showReviewerReviews(wrapper,choice.getValue()));
+        });
+
+        ret.getChildren().addAll(select);
+        return ret;
+    }
+
+    /**
      * Menu to select a platform. We can view all games available on the
      * selected platform
      *
@@ -858,6 +895,24 @@ public class GUI extends Application
     }
 
     /**
+     * Show all reviews that made by a specific reviewer
+     *
+     * @param wrapper wrapper class the vbox is placed into
+     * @param name game that the information is related to
+     * @return vbox containing the menu
+     */
+    public TableView showReviewerReviews(Pane wrapper,String name)
+    {
+        TableView table = new TableView();
+
+        enterReviewerReviewsTableData(table,name);
+
+        table.prefHeightProperty().bind(wrapper.heightProperty());
+        table.prefWidthProperty().bind(wrapper.widthProperty());
+        return table;
+    }
+
+    /**
      * Show the games that a specific platform has available
      *
      * @param wrapper wrapper class the vbox is placed into
@@ -873,6 +928,28 @@ public class GUI extends Application
         table.prefHeightProperty().bind(wrapper.heightProperty());
         table.prefWidthProperty().bind(wrapper.widthProperty());
         return table;
+    }
+
+    /**
+     * Enter the reviews data for specific reviewer into table
+     *
+     * @param table table data is inserted into
+     * @param name of the reviewer
+     */
+    public void enterReviewerReviewsTableData(TableView table,String name)
+    {
+        DBOperations dbOps = new DBOperations(conn);
+        TableColumn<ReviewerInfo, String> reviewerNameCol = new TableColumn<>("Game Name");
+        reviewerNameCol.setCellValueFactory(new PropertyValueFactory<>("GameName"));
+
+        TableColumn<ReviewerInfo, String> reviewCol = new TableColumn<>("Review");
+        reviewCol.setCellValueFactory(new PropertyValueFactory<>("review"));
+
+        TableColumn<ReviewerInfo, String> ratingCol = new TableColumn<>("Rating");
+        ratingCol.setCellValueFactory(new PropertyValueFactory<>("rating"));
+
+        table.getColumns().addAll(reviewerNameCol,reviewCol,ratingCol);
+        table.getItems().addAll(dbOps.getReviewerInfo(name));
     }
 
     /**
@@ -933,7 +1010,7 @@ public class GUI extends Application
         gameNameCol.setCellValueFactory(new PropertyValueFactory<>("GameName"));
 
         TableColumn<PublisherInfo, String> ratingCol = new TableColumn<>("Average Rating");
-        ratingCol.setCellValueFactory(new PropertyValueFactory<>("AvgReview"));
+        ratingCol.setCellValueFactory(new PropertyValueFactory<>("AvgRating"));
 
         table.getColumns().addAll(gameNameCol,ratingCol);
         table.getItems().addAll(dbOps.getPublisherGames(name));

@@ -31,8 +31,14 @@ SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));
 ## Application Features
 - [x] GUI - User inputs URL, DB username, password, driver (game_db need to be ready in mysql)
 - [x] List All Games, List All Publisher, List All Reviewers.
-- [ ] Filter Games by genre, rating, platform. (Query 1~3).
-- [ ] Filter Reviews by Reviewers name (Query 4).
-- [ ] Add a Game, Add a Publisher, Add a Reviewer, Add a Review (Query 5).
-- [ ] Update A Game (Query 6).
-- [ ] Delete A Game (Query 7).
+- [x] Search Game(Game Info) - Search games by GameName, Reviews or Platforms.
+- [x] Search reviews by Reviewer (Reviewer Info) - Search all reviews made by a reviewer
+- [x] Publisher (Publisher Info) - Search games by Publisher
+- [x] Search Games by Platform (Platform Info) - Search games by platform name.
+- [x] Search game by Genre (Genre Info) - Search games by Genre
+- [x] Add a Game, Add a Publisher, Add a Reviewer, Add a Review.
+- [ ] Edit A Game.
+- [ ] Delete A Game
+- [ ] Add features, when try to add existing data return message.
+- [ ] Game Info - search by platform not working.
+

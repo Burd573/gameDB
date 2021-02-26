@@ -172,7 +172,7 @@ public class DBOperations
                 String country = rs.getString("county");
                 Double avgRating = rs.getDouble("AVG(rating)");
 
-                PublisherList pub = new PublisherList(pubName, city, state, country, avgRating);
+                PublisherList pub = new PublisherList(pubName, city,state, country, avgRating);
                 publishers.add(pub);
             }
         } catch(SQLException e)
@@ -364,7 +364,7 @@ public class DBOperations
             //Do not commit to the database until specified
             conn.setAutoCommit(false);
 
-            //prepared statement to update the actors of a specified film
+            //prepared statement
             pstmt = conn.prepareStatement("SELECT game.name FROM game \n" +
                     "JOIN plays_on \n" +
                     "ON game.game_id = plays_on.game_id\n" +
@@ -419,6 +419,39 @@ public class DBOperations
             e.printStackTrace();
         }
         return games;
+    }
+
+
+    public List<ReviewerInfo> getReviewerInfo(String reviewerName)
+    {
+        List<ReviewerInfo> reviewer = new ArrayList<>();
+        try
+        {
+            //Do not commit to the database until specified
+            conn.setAutoCommit(false);
+
+            //prepared statement to update the actors of a specified film
+            pstmt = conn.prepareStatement("SELECT game.name, ANY_VALUE(review.comment) as review, review.rating FROM reviewer \n" +
+                    "JOIN review ON reviewer.reviewer_id = review.reviewer_id\n" +
+                    "JOIN game on game.game_id = review.game_id\n" +
+                    "WHERE reviewer.name = ?;");
+            pstmt.setString(1, reviewerName);
+            rs = pstmt.executeQuery();
+
+            while (rs.next())
+            {
+                String gameName = rs.getString("name");
+                String review = rs.getString("review");
+                Double rating = rs.getDouble("rating");
+
+                ReviewerInfo reviewerInfo = new ReviewerInfo(gameName,review,rating);
+                reviewer.add(reviewerInfo);
+            }
+        } catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        return reviewer;
     }
 
     public List<GenreInfo> getGenreInfo(String genreName)
