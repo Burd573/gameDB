@@ -12,10 +12,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import src.DBOperations;
-import src.GameInfo;
-import src.PlatformGames;
-import src.GameReviews;
+import src.*;
 
 import java.sql.*;
 import java.util.*;
@@ -276,6 +273,18 @@ public class GUI extends Application
             wrapperPane.getChildren().clear();
             wrapperPane.getChildren().add(platformInfo(wrapperPane));
         });
+
+        publisherInfoButton.setOnAction( e -> {
+            stage.sizeToScene();
+            wrapperPane.getChildren().clear();
+            wrapperPane.getChildren().add(publisherInfo(wrapperPane));
+        });
+
+        genreInfoButton.setOnAction( e -> {
+            stage.sizeToScene();
+            wrapperPane.getChildren().clear();
+            wrapperPane.getChildren().add(genreInfo(wrapperPane));
+        });
         //show the stage containing all elements of main menu
         stage.show();
     }
@@ -344,22 +353,22 @@ public class GUI extends Application
     public void enterGameTableData(TableView table)
     {
         DBOperations dbOps = new DBOperations(conn);
-        TableColumn<GameInfo, String> gameNameCol = new TableColumn<>("Game Name");
+        TableColumn<GameList, String> gameNameCol = new TableColumn<>("Game Name");
         gameNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
 
-        TableColumn<GameInfo, String> genreCol = new TableColumn<>("Genre");
+        TableColumn<GameList, String> genreCol = new TableColumn<>("Genre");
         genreCol.setCellValueFactory(new PropertyValueFactory<>("genre"));
 
-        TableColumn<GameInfo, Integer> relYearCol = new TableColumn<>("Release Year");
+        TableColumn<GameList, Integer> relYearCol = new TableColumn<>("Release Year");
         //this uses the getter method getReleaseYear() from GameInfo Object so it must
         //be syntax-specific. Cannot use release_year or releaseyear because it looks
         //specifically for getReleaseYear() from gameInfo Object
         relYearCol.setCellValueFactory(new PropertyValueFactory<>("releaseYear"));
 
-        TableColumn<GameInfo, String> pubNameCol = new TableColumn<>("Publisher Name");
+        TableColumn<GameList, String> pubNameCol = new TableColumn<>("Publisher Name");
         pubNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
 
-        TableColumn<GameInfo, Double> ratingCol = new TableColumn<>("Average Rating");
+        TableColumn<GameList, Double> ratingCol = new TableColumn<>("Average Rating");
         ratingCol.setCellValueFactory(new PropertyValueFactory<>("AvgReview"));
 
         table.getColumns().addAll(gameNameCol,genreCol,relYearCol,pubNameCol,ratingCol);
@@ -379,22 +388,22 @@ public class GUI extends Application
     public void enterPublisherTableData(TableView table)
     {
         DBOperations dbOps = new DBOperations(conn);
-        TableColumn<GameInfo, String> pubNameCol = new TableColumn<>("Publisher Name");
+        TableColumn<GameList, String> pubNameCol = new TableColumn<>("Publisher Name");
         pubNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
 
-        TableColumn<GameInfo, String> cityCol = new TableColumn<>("City");
+        TableColumn<GameList, String> cityCol = new TableColumn<>("City");
         cityCol.setCellValueFactory(new PropertyValueFactory<>("City"));
 
-        TableColumn<GameInfo, String> countryCol = new TableColumn<>("Country");
+        TableColumn<GameList, String> countryCol = new TableColumn<>("Country");
         countryCol.setCellValueFactory(new PropertyValueFactory<>("Country"));
 
-        TableColumn<GameInfo, String> stateCol = new TableColumn<>("State");
+        TableColumn<GameList, String> stateCol = new TableColumn<>("State");
         //this uses the getter method getState from PublisherInfo Object so it must
         //be syntax-specific. Cannot use pub_state or state because it looks
         //specifically for getState from PublisherInfo Object
         stateCol.setCellValueFactory(new PropertyValueFactory<>("State"));
 
-        TableColumn<GameInfo, Double> avgRatingCol = new TableColumn<>("Average Game Rating");
+        TableColumn<GameList, Double> avgRatingCol = new TableColumn<>("Average Game Rating");
         avgRatingCol.setCellValueFactory(new PropertyValueFactory<>("AvgRating"));
 
         table.getColumns().addAll(pubNameCol,cityCol,countryCol,stateCol,avgRatingCol);
@@ -414,16 +423,16 @@ public class GUI extends Application
     public void enterReviewerTableData(TableView table)
     {
         DBOperations dbOps = new DBOperations(conn);
-        TableColumn<GameInfo, String> reviewerNameCol = new TableColumn<>("Reviewer Name");
+        TableColumn<GameList, String> reviewerNameCol = new TableColumn<>("Reviewer Name");
         reviewerNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
 
-        TableColumn<GameInfo, Double> avgReviewCol = new TableColumn<>("Average Review");
+        TableColumn<GameList, Double> avgReviewCol = new TableColumn<>("Average Review");
         //this uses the getter method getAvgRating from ReviewerInfo Object so it must
         //be syntax-specific. Cannot use avg_rating or avgrating becuase it looks
         //speficially for getAvgRating() from ReviewerInfo Object
         avgReviewCol.setCellValueFactory(new PropertyValueFactory<>("avgRating"));
 
-        TableColumn<GameInfo, Integer> numReviewsCol = new TableColumn<>("Number of Reviews");
+        TableColumn<GameList, Integer> numReviewsCol = new TableColumn<>("Number of Reviews");
         numReviewsCol.setCellValueFactory(new PropertyValueFactory<>("numReviews"));
 
         table.getColumns().addAll(reviewerNameCol,avgReviewCol,numReviewsCol);
@@ -770,13 +779,13 @@ public class GUI extends Application
     public void enterGameReviewTableData(TableView table,String name)
     {
         DBOperations dbOps = new DBOperations(conn);
-        TableColumn<GameReviews, String> reviewerNameCol = new TableColumn<>("Reviewer Name");
+        TableColumn<GameReviewsInfo, String> reviewerNameCol = new TableColumn<>("Reviewer Name");
         reviewerNameCol.setCellValueFactory(new PropertyValueFactory<>("reviewerName"));
 
-        TableColumn<GameReviews, Double> ratingCol = new TableColumn<>("Rating");
+        TableColumn<GameReviewsInfo, Double> ratingCol = new TableColumn<>("Rating");
         ratingCol.setCellValueFactory(new PropertyValueFactory<>("Score"));
 
-        TableColumn<GameReviews, String> commentCol = new TableColumn<>("Comment");
+        TableColumn<GameReviewsInfo, String> commentCol = new TableColumn<>("Comment");
         commentCol.setCellValueFactory(new PropertyValueFactory<>("Comment"));
 
         table.getColumns().addAll(reviewerNameCol,ratingCol,commentCol);
@@ -810,7 +819,7 @@ public class GUI extends Application
     public void enterGamePlatformTableData(TableView table,String name)
     {
         DBOperations dbOps = new DBOperations(conn);
-        TableColumn<PlatformGames, String> platformNameCol = new TableColumn<>("Platform Name");
+        TableColumn<PlatformGamesInfo, String> platformNameCol = new TableColumn<>("Platform Name");
         platformNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
 
         table.getColumns().addAll(platformNameCol);
@@ -875,10 +884,107 @@ public class GUI extends Application
     public void enterPlatformGamesTableData(TableView table,String name)
     {
         DBOperations dbOps = new DBOperations(conn);
-        TableColumn<PlatformGames, String> gameNameCol = new TableColumn<>("Game Name");
+        TableColumn<PlatformGamesInfo, String> gameNameCol = new TableColumn<>("Game Name");
         gameNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
 
         table.getColumns().addAll(gameNameCol);
         table.getItems().addAll(dbOps.getPlatformGames(name));
     }
+
+    public VBox publisherInfo(Pane wrapper)
+    {
+        VBox ret = new VBox();
+        HBox select = new HBox();
+
+        DBOperations dbOps = new DBOperations(conn);
+        List<String> pubNames = dbOps.getPublisherNames();
+
+        Label choiceSelection = new Label("Select Publisher");
+        ComboBox<String> choice = new ComboBox<>(FXCollections.observableArrayList(pubNames));
+
+        Button okButton = new Button("OK");
+
+        select.getChildren().addAll(choiceSelection,choice,okButton);
+
+        okButton.setOnAction(e -> {
+            ret.getChildren().clear();
+            ret.getChildren().addAll(showPublisherGames(wrapper,choice.getValue()));
+        });
+
+        ret.getChildren().addAll(select);
+        return ret;
+    }
+
+    public TableView showPublisherGames(Pane wrapper,String name)
+    {
+        TableView table = new TableView();
+
+        enterPublisherGamesTableData(table,name);
+
+        table.prefHeightProperty().bind(wrapper.heightProperty());
+        table.prefWidthProperty().bind(wrapper.widthProperty());
+        return table;
+    }
+
+    public void enterPublisherGamesTableData(TableView table,String name)
+    {
+        DBOperations dbOps = new DBOperations(conn);
+        TableColumn<PublisherInfo, String> gameNameCol = new TableColumn<>("Game Name");
+        gameNameCol.setCellValueFactory(new PropertyValueFactory<>("GameName"));
+
+        TableColumn<PublisherInfo, String> ratingCol = new TableColumn<>("Average Rating");
+        ratingCol.setCellValueFactory(new PropertyValueFactory<>("AvgReview"));
+
+        table.getColumns().addAll(gameNameCol,ratingCol);
+        table.getItems().addAll(dbOps.getPublisherGames(name));
+    }
+
+    public VBox genreInfo(Pane wrapper)
+    {
+        VBox ret = new VBox();
+        HBox select = new HBox();
+
+        DBOperations dbOps = new DBOperations(conn);
+        List<String> genres = dbOps.getGenreNames();
+
+        Label choiceSelection = new Label("Select Genre");
+        ComboBox<String> choice = new ComboBox<>(FXCollections.observableArrayList(genres));
+
+        Button okButton = new Button("OK");
+
+        select.getChildren().addAll(choiceSelection,choice,okButton);
+
+        okButton.setOnAction(e -> {
+            ret.getChildren().clear();
+            ret.getChildren().addAll(showGenreGames(wrapper,choice.getValue()));
+        });
+
+        ret.getChildren().addAll(select);
+        return ret;
+    }
+
+    public TableView showGenreGames(Pane wrapper,String name)
+    {
+        TableView table = new TableView();
+
+        enterGenreGamesTableData(table,name);
+
+        table.prefHeightProperty().bind(wrapper.heightProperty());
+        table.prefWidthProperty().bind(wrapper.widthProperty());
+        return table;
+    }
+
+    public void enterGenreGamesTableData(TableView table,String name)
+    {
+        DBOperations dbOps = new DBOperations(conn);
+        TableColumn<GenreInfo, String> genreNameCol = new TableColumn<>("Game Name");
+        genreNameCol.setCellValueFactory(new PropertyValueFactory<>("GameName"));
+
+        TableColumn<PublisherInfo, String> ratingCol = new TableColumn<>("Average Rating");
+        ratingCol.setCellValueFactory(new PropertyValueFactory<>("AvgReview"));
+
+        table.getColumns().addAll(genreNameCol,ratingCol);
+        table.getItems().addAll(dbOps.getGenreInfo(name));
+    }
+
 }
