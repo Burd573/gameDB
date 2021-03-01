@@ -729,6 +729,180 @@ public class DBOperations
         }
     }
 
+    public void updateGame(String oldName, String newName, String newGenre)
+    {
+        try
+        {
+            //Do not commit to the database until specified
+            conn.setAutoCommit(false);
+            //prepared statement to update the actors of a specified film
+            pstmt = conn.prepareStatement("UPDATE game SET name = ?, genre = ? WHERE (name = ? AND game_id <> 0);");
+            pstmt.setString(1, newName);
+            pstmt.setString(2, newGenre);
+            pstmt.setString(3,oldName);
+            pstmt.executeUpdate();
+        } catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public void updatePublisher(String pubName, String newName, String newCity, String newState, String newCountry)
+    {
+        try
+        {
+            //Do not commit to the database until specified
+            conn.setAutoCommit(false);
+
+            //prepared statement to update the actors of a specified film
+            pstmt = conn.prepareStatement("UPDATE publisher " +
+                    "SET name = ?," +
+                    "city = ?," +
+                    "state = ? ," +
+                    "county = ? " +
+                    "WHERE (name = ? AND pub_id <> 0);");
+            pstmt.setString(1, newName);
+            pstmt.setString(2, newCity);
+            pstmt.setString(3,newState);
+            pstmt.setString(4,newCountry);
+            pstmt.setString(5,pubName);
+            pstmt.executeUpdate();
+        } catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateReviewer(String oldName, String newName)
+    {
+        try
+        {
+            //Do not commit to the database until specified
+            conn.setAutoCommit(false);
+
+            //prepared statement to update the actors of a specified film
+            pstmt = conn.prepareStatement("UPDATE reviewer SET name = ? WHERE (name = ? AND reviewer_id <> 0);");
+            pstmt.setString(1, newName);
+            pstmt.setString(2, oldName);
+            pstmt.executeUpdate();
+        } catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public List<String> gamesReviewed(String reviewerName)
+    {
+        List<String> games = new ArrayList<>();
+        try
+        {
+            //Do not commit to the database until specified
+            conn.setAutoCommit(false);
+
+            //prepared statement to update the actors of a specified film
+            pstmt = conn.prepareStatement("SELECT game.name\n" +
+                    "FROM review\n" +
+                    "JOIN game\n" +
+                    "ON game.game_id = review.game_id\n" +
+                    "JOIN reviewer\n" +
+                    "ON reviewer.reviewer_id = review.reviewer_id\n" +
+                    "WHERE reviewer.name = ?;");
+            pstmt.setString(1, reviewerName);
+            rs = pstmt.executeQuery();
+
+            while (rs.next())
+            {
+                String gameName = rs.getString("name");
+                games.add(gameName);
+            }
+
+        } catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+
+        return games;
+    }
+
+    public void updateReview(String gameName, String reviewerName, int newScore, String newComment)
+    {
+        try
+        {
+            //Do not commit to the database until specified
+            conn.setAutoCommit(false);
+
+            //prepared statement to update the actors of a specified film
+            pstmt = conn.prepareStatement("UPDATE review SET rating = ?, comment = ? " +
+                    "WHERE (reviewer_id = " +
+                    "(SELECT reviewer_id FROM reviewer WHERE name = ?) " +
+                    "AND game_id = (SELECT game_id FROM game WHERE name = ?));");
+            pstmt.setInt(1, newScore);
+            pstmt.setString(2, newComment);
+            pstmt.setString(3, reviewerName);
+            pstmt.setString(4, gameName);
+            pstmt.executeUpdate();
+        } catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public void removePublisher(String name)
+    {
+        try
+        {
+            //Do not commit to the database until specified
+            conn.setAutoCommit(false);
+
+            //prepared statement to update the actors of a specified film
+            pstmt = conn.prepareStatement("DELETE FROM publisher WHERE (publisher.name = ? AND pub_id <> 0);");
+            pstmt.setString(1, name);
+            pstmt.executeUpdate();
+        } catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public void removeReviewer(String name)
+    {
+        try
+        {
+            //Do not commit to the database until specified
+            conn.setAutoCommit(false);
+
+            //prepared statement to update the actors of a specified film
+            pstmt = conn.prepareStatement("DELETE FROM reviewer WHERE (reviewer.name = ? AND reviewer_id <> 0);");
+            pstmt.setString(1, name);
+            pstmt.executeUpdate();
+        } catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public void removeReview(String reviewerName, String gameName)
+    {
+        try
+        {
+            //Do not commit to the database until specified
+            conn.setAutoCommit(false);
+
+            //prepared statement to update the actors of a specified film
+            pstmt = conn.prepareStatement("DELETE from review WHERE reviewer_id = " +
+                    "(SELECT reviewer_id FROM reviewer WHERE name = ?) " +
+                    "AND game_id = (SELECT game_id FROM game WHERE name = ?);");
+            pstmt.setString(1, reviewerName);
+            pstmt.setString(2, gameName);
+            pstmt.executeUpdate();
+        } catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+
+
     public void close(Statement stmt, ResultSet rs, PreparedStatement pstmt)
     {
         try
