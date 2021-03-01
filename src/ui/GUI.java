@@ -1,7 +1,6 @@
 package ui;
 
 import javafx.application.Application;
-import javafx.beans.binding.When;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -57,7 +56,7 @@ public class GUI extends Application
         TextField uNameField = new TextField("root");
         //change to password field later
         TextField pwdField = new TextField("Cardinals2112");
-        TextField driverURLField = new TextField("com.mysql.cj.jdbc.Driver");;
+        TextField driverURLField = new TextField("com.mysql.cj.jdbc.Driver");
 
         //Add the labels and textfields to the gridpane at their appropriate spots
         gridpane.add(dbUrlLabel,0,0);
@@ -79,7 +78,7 @@ public class GUI extends Application
         vbox.getChildren().addAll(gridpane,okButton);
         vbox.setAlignment(Pos.CENTER);
         vbox.setMinSize(250,150);
-        vbox.setMargin(gridpane,new Insets(10,10,10,10));
+        VBox.setMargin(gridpane,new Insets(10,10,10,10));
 
         //add the vbox to scene which gets added to the stage.
         Scene scene = new Scene(vbox);
@@ -127,7 +126,7 @@ public class GUI extends Application
             System.out.println("Incorrect Login Info");
         }catch (SQLException e)
         {
-            System.out.println("Incorrect Database URL");;
+            System.out.println("Incorrect Database URL");
         }
     }
 
@@ -506,17 +505,15 @@ public class GUI extends Application
         enterButton.setMinWidth(50);
 
         //When the button is clicked, all new game info is inserted into the DB
-        enterButton.setOnAction(e -> {
-            dbOps.addGame(comboBox.getValue(),gameGenreInput.getText(),gameNameInput.getText(),releaseYearInput.getText());
-        });
+        enterButton.setOnAction(e -> dbOps.addGame(comboBox.getValue(),gameGenreInput.getText(),gameNameInput.getText(),releaseYearInput.getText()));
 
         //Adjust spacing/margins of items
         vbox.getChildren().addAll(nameBox,genreBox,yearBox,pubBox,enterButton);
         vbox.setSpacing(20);
-        vbox.setMargin(nameBox,new Insets(15, 40, 0, 40));
-        vbox.setMargin(genreBox,new Insets(10, 40, 0, 40));
-        vbox.setMargin(yearBox,new Insets(10, 40, 0, 40));
-        vbox.setMargin(pubBox,new Insets(10, 40, 15, 40));
+        VBox.setMargin(nameBox,new Insets(15, 40, 0, 40));
+        VBox.setMargin(genreBox,new Insets(10, 40, 0, 40));
+        VBox.setMargin(yearBox,new Insets(10, 40, 0, 40));
+        VBox.setMargin(pubBox,new Insets(10, 40, 15, 40));
         vbox.setAlignment(Pos.CENTER);
 
         //bind vbox to parent element
@@ -573,17 +570,15 @@ public class GUI extends Application
         Button enterButton = new Button("Enter");
         enterButton.setMinWidth(50);
         //When the button is clicked, all new publisher info is inserted into the DB
-        enterButton.setOnAction(e -> {
-            dbOps.addPublisher(pubNameInput.getText(),pubCityInput.getText(),pubStateInput.getText(),pubCountryInput.getText());
-        });
+        enterButton.setOnAction(e -> dbOps.addPublisher(pubNameInput.getText(),pubCityInput.getText(),pubStateInput.getText(),pubCountryInput.getText()));
 
         vbox.getChildren().addAll(nameBox,cityBox,stateBox,countryBox,enterButton);
 
         vbox.setSpacing(20);
-        vbox.setMargin(nameBox,new Insets(15, 40, 0, 40));
-        vbox.setMargin(cityBox,new Insets(10, 40, 0, 40));
-        vbox.setMargin(stateBox,new Insets(10, 40, 0, 40));
-        vbox.setMargin(countryBox,new Insets(10, 40, 15, 40));
+        VBox.setMargin(nameBox,new Insets(15, 40, 0, 40));
+        VBox.setMargin(cityBox,new Insets(10, 40, 0, 40));
+        VBox.setMargin(stateBox,new Insets(10, 40, 0, 40));
+        VBox.setMargin(countryBox,new Insets(10, 40, 15, 40));
         vbox.setAlignment(Pos.CENTER);
 
         vbox.prefHeightProperty().bind(wrapper.heightProperty());
@@ -615,13 +610,11 @@ public class GUI extends Application
         Button enterButton = new Button("Enter");
         enterButton.setMinWidth(50);
 
-        enterButton.setOnAction(e -> {
-            dbOps.addReviewer(reviewerNameInput.getText());
-        });
+        enterButton.setOnAction(e -> dbOps.addReviewer(reviewerNameInput.getText()));
 
         vbox.getChildren().addAll(nameBox,enterButton);
         vbox.setSpacing(30);
-        vbox.setMargin(nameBox,new Insets(30,40,10,40));
+        VBox.setMargin(nameBox,new Insets(30,40,10,40));
         vbox.setAlignment(Pos.CENTER);
 
         vbox.prefHeightProperty().bind(wrapper.heightProperty());
@@ -672,17 +665,15 @@ public class GUI extends Application
 
         Button enterButton = new Button("Enter");
         enterButton.setMinWidth(50);
-        enterButton.setOnAction(e -> {
-            dbOps.addReview(reviewerComboBox.getValue(),gameComboBox.getValue(),Double.parseDouble(ratingInput.getText()),commentInput.getText());
-        });
+        enterButton.setOnAction(e -> dbOps.addReview(reviewerComboBox.getValue(),gameComboBox.getValue(),Double.parseDouble(ratingInput.getText()),commentInput.getText()));
 
         vBox.getChildren().addAll(reviewerNameBox,gameNameBox,ratingBox,commentBox,enterButton);
 
         vBox.setSpacing(20);
-        vBox.setMargin(reviewerNameBox,new Insets(15, 40, 0, 40));
-        vBox.setMargin(gameNameBox,new Insets(10, 40, 0, 40));
-        vBox.setMargin(ratingBox,new Insets(10, 40, 0, 40));
-        vBox.setMargin(commentBox,new Insets(10, 40, 15, 40));
+        VBox.setMargin(reviewerNameBox,new Insets(15, 40, 0, 40));
+        VBox.setMargin(gameNameBox,new Insets(10, 40, 0, 40));
+        VBox.setMargin(ratingBox,new Insets(10, 40, 0, 40));
+        VBox.setMargin(commentBox,new Insets(10, 40, 15, 40));
         vBox.setAlignment(Pos.CENTER);
 
         vBox.prefHeightProperty().bind(wrapper.heightProperty());
@@ -719,7 +710,7 @@ public class GUI extends Application
 
         getSelection.getChildren().addAll(nameBox,enterButton);
         getSelection.setSpacing(30);
-        getSelection.setMargin(nameBox,new Insets(30,40,10,40));
+        VBox.setMargin(nameBox,new Insets(30,40,10,40));
         getSelection.setAlignment(Pos.CENTER);
 
         getSelection.prefHeightProperty().bind(wrapper.heightProperty());
@@ -817,7 +808,7 @@ public class GUI extends Application
      */
     public TableView showGamePlatforms(Pane wrapper,String name)
     {
-        TableView table = new TableView();
+        var table = new TableView();
 
         enterGamePlatformTableData(table,name);
 
@@ -978,6 +969,12 @@ public class GUI extends Application
         table.getItems().addAll(dbOps.getReviewerInfo(name));
     }
 
+    /**
+     * Menu for selecting a specific publisher to view
+     *
+     * @param wrapper wrapper class the vbox is placed into
+     * @return menu for selecting publisher
+     */
     public VBox publisherInfo(Pane wrapper)
     {
         VBox ret = new VBox();
@@ -1002,6 +999,13 @@ public class GUI extends Application
         return ret;
     }
 
+    /**
+     * Create table showing all of the games from a specific publisher
+     *
+     * @param wrapper wrapper class the vbox is placed into
+     * @param name of publisher
+     * @return table with all games from a specific publisher
+     */
     public TableView showPublisherGames(Pane wrapper,String name)
     {
         TableView table = new TableView();
@@ -1013,6 +1017,12 @@ public class GUI extends Application
         return table;
     }
 
+    /**
+     * Insert values into publihser games table
+     *
+     * @param table to insert values into
+     * @param name of publisher
+     */
     public void enterPublisherGamesTableData(TableView table,String name)
     {
         DBOperations dbOps = new DBOperations(conn);
@@ -1026,6 +1036,12 @@ public class GUI extends Application
         table.getItems().addAll(dbOps.getPublisherGames(name));
     }
 
+    /**
+     * Menu to select genre to view
+     *
+     * @param wrapper wrapper class the vbox is placed into
+     * @return menu
+     */
     public VBox genreInfo(Pane wrapper)
     {
         VBox ret = new VBox();
@@ -1050,6 +1066,13 @@ public class GUI extends Application
         return ret;
     }
 
+    /**
+     * Show the table of all games of a specified genre
+     *
+     * @param wrapper wrapper class the vbox is placed into
+     * @param name name of genre
+     * @return table showing all games of specified genre
+     */
     public TableView showGenreGames(Pane wrapper,String name)
     {
         TableView table = new TableView();
@@ -1061,6 +1084,12 @@ public class GUI extends Application
         return table;
     }
 
+    /**
+     * Enter games for a specified genre into table
+     *
+     * @param table to enter games into
+     * @param name of genre
+     */
     public void enterGenreGamesTableData(TableView table,String name)
     {
         DBOperations dbOps = new DBOperations(conn);
@@ -1074,6 +1103,12 @@ public class GUI extends Application
         table.getItems().addAll(dbOps.getGenreInfo(name));
     }
 
+    /**
+     * menu to select game to update
+     *
+     * @param wrapper wrapper class the vbox is placed into
+     * @return menu for user to select game
+     */
     public VBox selectGameUpdate(Pane wrapper)
     {
         VBox getSelection = new VBox();
@@ -1096,7 +1131,7 @@ public class GUI extends Application
 
         getSelection.getChildren().addAll(nameBox,enterButton);
         getSelection.setSpacing(30);
-        getSelection.setMargin(nameBox,new Insets(30,40,10,40));
+        VBox.setMargin(nameBox,new Insets(30,40,10,40));
         getSelection.setAlignment(Pos.CENTER);
 
         getSelection.prefHeightProperty().bind(wrapper.heightProperty());
@@ -1105,6 +1140,14 @@ public class GUI extends Application
         return getSelection;
     }
 
+    /**
+     * menu to edit the name and genre of a specified game in DB
+     *
+     * @param oldName old name of game
+     * @param oldGenre old genre of game
+     * @param wrapper wrapper class the vbox is placed into
+     * @return menu
+     */
     public VBox editGame(String oldName, String oldGenre, Pane wrapper)
     {
         VBox vbox = new VBox();
@@ -1141,8 +1184,8 @@ public class GUI extends Application
         //Adjust spacing/margins of items
         vbox.getChildren().addAll(nameBox,genreBox,enterButton);
         vbox.setSpacing(20);
-        vbox.setMargin(nameBox,new Insets(15, 40, 0, 40));
-        vbox.setMargin(genreBox,new Insets(10, 40, 0, 40));
+        VBox.setMargin(nameBox,new Insets(15, 40, 0, 40));
+        VBox.setMargin(genreBox,new Insets(10, 40, 0, 40));
 
         vbox.setAlignment(Pos.CENTER);
 
@@ -1153,6 +1196,12 @@ public class GUI extends Application
         return vbox;
     }
 
+    /**
+     * Menu to select game to remove from DB
+     *
+     * @param wrapper wrapper class the vbox is placed into
+     * @return menu
+     */
     public VBox selectGameRemove(Pane wrapper)
     {
         VBox getSelection = new VBox();
@@ -1165,16 +1214,14 @@ public class GUI extends Application
         Button enterButton = new Button("Remove");
         enterButton.setMinWidth(50);
 
-        enterButton.setOnAction(e -> {
-            dbOps.removeGame(gameComboBox.getValue());
-        });
+        enterButton.setOnAction(e -> dbOps.removeGame(gameComboBox.getValue()));
 
         VBox nameBox = new VBox();
         nameBox.getChildren().addAll(gameName,gameComboBox);
 
         getSelection.getChildren().addAll(nameBox,enterButton);
         getSelection.setSpacing(30);
-        getSelection.setMargin(nameBox,new Insets(30,40,10,40));
+        VBox.setMargin(nameBox,new Insets(30,40,10,40));
         getSelection.setAlignment(Pos.CENTER);
 
         getSelection.prefHeightProperty().bind(wrapper.heightProperty());
