@@ -183,6 +183,25 @@ public class DBOperations
     }
 
 
+    public List<String> getTables()
+    {
+        List<String> tables = new ArrayList<>();
+        try
+        {
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery("SHOW TABLES;");
+            while(rs.next())
+            {
+                String tableName = rs.getString("Tables_in_game_db");
+
+                tables.add(tableName);
+            }
+        } catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+        return tables;
+    }
 
     public List<ReviewerList> getReviewers()
     {
@@ -320,6 +339,12 @@ public class DBOperations
         }
     }
 
+    /**
+     * Get a list of all reviews for a given game
+     *
+     * @param name of game
+     * @return list of all reviews
+     */
     public List<GameReviewsInfo> viewGameReviews(String name)
     {
         List<GameReviewsInfo> gameReviews = new ArrayList<>();
@@ -356,6 +381,44 @@ public class DBOperations
         return gameReviews;
     }
 
+    public List<GamePlatformInfo> getGamePlatforms(String name)
+    {
+        List<GamePlatformInfo> platforms = new ArrayList<>();
+        try
+        {
+            //Do not commit to the database until specified
+            conn.setAutoCommit(false);
+
+            //prepared statement to update the actors of a specified film
+            pstmt = conn.prepareStatement("SELECT platform.name \n" +
+                    "FROM platform\n" +
+                    "JOIN plays_on\n" +
+                    "ON platform.platform_id = plays_on.pub_id\n" +
+                    "JOIN game\n" +
+                    "ON plays_on.game_id = game.game_id\n" +
+                    "WHERE game.name = ?;");
+            pstmt.setString(1, name);
+            rs = pstmt.executeQuery();
+
+            while (rs.next())
+            {
+                String platName = rs.getString("name");
+                GamePlatformInfo plat = new GamePlatformInfo(platName);
+                platforms.add(plat);
+            }
+        } catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        return platforms;
+    }
+
+    /**
+     * Get a list of all games on a specified platform
+     *
+     * @param name of platform
+     * @return list of games
+     */
     public List<PlatformGamesInfo> getPlatformGames(String name)
     {
         List<PlatformGamesInfo> platforms = new ArrayList<>();
@@ -387,6 +450,12 @@ public class DBOperations
         return platforms;
     }
 
+    /**
+     * Get a list of all games and their average rating by a specified publisher
+     *
+     * @param name of publisher
+     * @return list of all games and their average rating
+     */
     public List<PublisherInfo> getPublisherGames(String name)
     {
         List<PublisherInfo> games = new ArrayList<>();
@@ -421,6 +490,44 @@ public class DBOperations
         return games;
     }
 
+    public List<ReviewerInfo> getReviewerInfo(String reviewerName)
+    {
+        List<ReviewerInfo> reviewer = new ArrayList<>();
+        try
+        {
+            //Do not commit to the database until specified
+            conn.setAutoCommit(false);
+
+            //prepared statement to update the actors of a specified film
+            pstmt = conn.prepareStatement("SELECT game.name, ANY_VALUE(review.comment) as review, review.rating FROM reviewer \n" +
+                    "JOIN review ON reviewer.reviewer_id = review.reviewer_id\n" +
+                    "JOIN game on game.game_id = review.game_id\n" +
+                    "WHERE reviewer.name = ?;");
+            pstmt.setString(1, reviewerName);
+            rs = pstmt.executeQuery();
+
+            while (rs.next())
+            {
+                String gameName = rs.getString("name");
+                String review = rs.getString("review");
+                Double rating = rs.getDouble("rating");
+
+                ReviewerInfo reviewerInfo = new ReviewerInfo(gameName,review,rating);
+                reviewer.add(reviewerInfo);
+            }
+        } catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        return reviewer;
+    }
+
+    /**
+     * Return a list of all games of a certain genre in the DB
+     *
+     * @param genreName Genre of games we wish to view
+     * @return list of all games of a certain genre
+     */
     public List<GenreInfo> getGenreInfo(String genreName)
     {
         List<GenreInfo> genre = new ArrayList<>();
@@ -452,6 +559,87 @@ public class DBOperations
             e.printStackTrace();
         }
         return genre;
+    }
+
+    public String getGameGenre(String name)
+    {
+        String genre = null;
+        System.out.println(name);
+        try
+        {
+            //Do not commit to the database until specified
+            conn.setAutoCommit(false);
+
+            //prepared statement to update the actors of a specified film
+            pstmt = conn.prepareStatement("SELECT genre FROM game WHERE game.name = ?;");
+            pstmt.setString(1, name);
+
+            rs = pstmt.executeQuery();
+            while(rs.next())
+            {
+                genre = rs.getString(1);
+            }
+
+        } catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+        return genre;
+
+    }
+
+    public void editGameName(String oldName, String newName)
+    {
+        try
+        {
+            //Do not commit to the database until specified
+            conn.setAutoCommit(false);
+
+            //prepared statement to update the actors of a specified film
+            pstmt = conn.prepareStatement("UPDATE game SET game.name = ? WHERE (game.name =? AND game_id <> 0);");
+            pstmt.setString(1, newName);
+            pstmt.setString(2, oldName);
+            pstmt.executeUpdate();
+        } catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public void editGameGenre(String gameName, String oldGenre, String newGenre)
+    {
+        try
+        {
+            //Do not commit to the database until specified
+            conn.setAutoCommit(false);
+
+            //prepared statement to update the actors of a specified film
+            pstmt = conn.prepareStatement("UPDATE game SET game.genre = ? WHERE (game.genre =? AND game.name = ? AND game_id <> 0);");
+            pstmt.setString(1, newGenre);
+            pstmt.setString(2, oldGenre);
+            pstmt.setString(3,gameName);
+            pstmt.executeUpdate();
+        } catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public void removeGame(String name)
+    {
+        try
+        {
+            //Do not commit to the database until specified
+            conn.setAutoCommit(false);
+
+            //prepared statement to update the actors of a specified film
+            pstmt = conn.prepareStatement("DELETE FROM game WHERE (game.name = ? AND game_id <> 0);");
+            pstmt.setString(1, name);
+            pstmt.executeUpdate();
+        } catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     public void close(Statement stmt, ResultSet rs, PreparedStatement pstmt)
