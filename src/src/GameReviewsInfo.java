@@ -1,12 +1,12 @@
 package src;
 
-public class GameReviews
+public class GameReviewsInfo
 {
     private String reviewerName;
     private Double score;
     private String comment;
 
-    public GameReviews(String reviewerName, Double score, String comment)
+    public GameReviewsInfo(String reviewerName, Double score, String comment)
     {
         this.reviewerName = reviewerName;
         this.score = score;

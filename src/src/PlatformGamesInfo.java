@@ -1,6 +1,6 @@
 package src;
 
-public class GamePlatforms
+public class PlatformGamesInfo
 {
     String name;
 
@@ -14,7 +14,7 @@ public class GamePlatforms
         this.name = name;
     }
 
-    public GamePlatforms(String name)
+    public PlatformGamesInfo(String name)
     {
         this.name = name;
     }

@@ -2,44 +2,44 @@ package src;
 
 public class ReviewerInfo
 {
-    String name;
-    Double avgRating;
-    Integer numReviews;
+    String gameName;
+    String review;
+    Double rating;
 
-    public ReviewerInfo(String name, Double avgRating, Integer numReviews)
+    public String getGameName()
     {
-        this.name = name;
-        this.avgRating = avgRating;
-        this.numReviews = numReviews;
+        return gameName;
     }
 
-    public String getName()
+    public void setGameName(String gameName)
     {
-        return name;
+        this.gameName = gameName;
     }
 
-    public void setName(String name)
+    public String getReview()
     {
-        this.name = name;
+        return review;
     }
 
-    public Double getAvgRating()
+    public void setReview(String review)
     {
-        return avgRating;
+        this.review = review;
     }
 
-    public void setAvgRating(Double avgRating)
+    public Double getRating()
     {
-        this.avgRating = avgRating;
+        return rating;
     }
 
-    public Integer getNumReviews()
+    public void setRating(Double rating)
     {
-        return numReviews;
+        this.rating = rating;
     }
 
-    public void setNumReviews(Integer numReviews)
+    public ReviewerInfo(String gameName, String review, Double rating)
     {
-        this.numReviews = numReviews;
+        this.gameName = gameName;
+        this.review = review;
+        this.rating = rating;
     }
 }

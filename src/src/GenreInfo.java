@@ -1,6 +1,6 @@
 package src;
 
-public class PublisherInfo
+public class GenreInfo
 {
     String gameName;
     Double avgReview;
@@ -25,7 +25,7 @@ public class PublisherInfo
         this.avgReview = avgReview;
     }
 
-    public PublisherInfo(String gameName, Double avgReview)
+    public GenreInfo(String gameName, Double avgReview)
     {
         this.gameName = gameName;
         this.avgReview = avgReview;

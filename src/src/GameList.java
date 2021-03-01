@@ -3,7 +3,7 @@ package src;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-public class GameInfo
+public class GameList
 {
     private String name;
     private String genre;
@@ -12,7 +12,7 @@ public class GameInfo
     private Double avgReview;
 
 
-    public GameInfo(String name, String genre, Integer releaseYear, String publisher, Double avgReview)
+    public GameList(String name, String genre, Integer releaseYear, String publisher, Double avgReview)
     {
         this.name = name;
         this.genre = genre;
