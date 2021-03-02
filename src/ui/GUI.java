@@ -175,7 +175,7 @@ public class GUI extends Application
         Button showPublisherButton = new Button("List Publishers");
         showPublisherButton.setMinSize(100,50);
 
-        Button addPublisherButton = new Button("add Publisher");
+        Button addPublisherButton = new Button("Add Publisher");
         addPublisherButton.setMinSize(100,50);
 
         Button showReviewersButton = new Button("List Reviewers");
