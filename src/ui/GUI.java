@@ -296,12 +296,12 @@ public class GUI extends Application
             wrapperPane.getChildren().clear();
             wrapperPane.getChildren().add(editData(wrapperPane));
         });
-//
-//        deleteDataButton.setOnAction(e -> {
-//            stage.sizeToScene();
-//            wrapperPane.getChildren().clear();
-//            wrapperPane.getChildren().add(selectGameRemove(wrapperPane));
-//        });
+
+        deleteDataButton.setOnAction(e -> {
+            stage.sizeToScene();
+            wrapperPane.getChildren().clear();
+            wrapperPane.getChildren().add(deleteData(wrapperPane));
+        });
 
         //show the stage containing all elements of main menu
         stage.show();
@@ -508,7 +508,12 @@ public class GUI extends Application
         enterButton.setMinWidth(50);
 
         //When the button is clicked, all new game info is inserted into the DB
-        enterButton.setOnAction(e -> dbOps.addGame(comboBox.getValue(),gameGenreInput.getText(),gameNameInput.getText(),releaseYearInput.getText()));
+        enterButton.setOnAction(e -> {
+            dbOps.addGame(comboBox.getValue(),gameGenreInput.getText(),gameNameInput.getText(),releaseYearInput.getText());
+            gameGenreInput.clear();
+            gameNameInput.clear();
+            releaseYearInput.clear();
+        });
 
         //Adjust spacing/margins of items
         vbox.getChildren().addAll(nameBox,genreBox,yearBox,pubBox,enterButton);
@@ -573,7 +578,13 @@ public class GUI extends Application
         Button enterButton = new Button("Enter");
         enterButton.setMinWidth(50);
         //When the button is clicked, all new publisher info is inserted into the DB
-        enterButton.setOnAction(e -> dbOps.addPublisher(pubNameInput.getText(),pubCityInput.getText(),pubStateInput.getText(),pubCountryInput.getText()));
+        enterButton.setOnAction(e -> {
+            dbOps.addPublisher(pubNameInput.getText(),pubCityInput.getText(),pubStateInput.getText(),pubCountryInput.getText());
+            pubNameInput.clear();
+            pubCityInput.clear();
+            pubStateInput.clear();
+            pubCountryInput.clear();
+        });
 
         vbox.getChildren().addAll(nameBox,cityBox,stateBox,countryBox,enterButton);
 
@@ -613,7 +624,10 @@ public class GUI extends Application
         Button enterButton = new Button("Enter");
         enterButton.setMinWidth(50);
 
-        enterButton.setOnAction(e -> dbOps.addReviewer(reviewerNameInput.getText()));
+        enterButton.setOnAction(e -> {
+            dbOps.addReviewer(reviewerNameInput.getText());
+            reviewerNameInput.clear();
+        });
 
         vbox.getChildren().addAll(nameBox,enterButton);
         vbox.setSpacing(30);
@@ -668,7 +682,11 @@ public class GUI extends Application
 
         Button enterButton = new Button("Enter");
         enterButton.setMinWidth(50);
-        enterButton.setOnAction(e -> dbOps.addReview(reviewerComboBox.getValue(),gameComboBox.getValue(),Double.parseDouble(ratingInput.getText()),commentInput.getText()));
+        enterButton.setOnAction(e -> {
+            dbOps.addReview(reviewerComboBox.getValue(),gameComboBox.getValue(),Double.parseDouble(ratingInput.getText()),commentInput.getText());
+            ratingInput.clear();
+            commentInput.clear();
+        });
 
         vBox.getChildren().addAll(reviewerNameBox,gameNameBox,ratingBox,commentBox,enterButton);
 
@@ -1496,5 +1514,218 @@ public class GUI extends Application
         return ret;
     }
 
+    public VBox deleteData(Pane wrapper)
+    {
+        VBox ret = new VBox();
+        //Labels instructing the user which data to enter
+        Label selectionLabel = new Label("Select what you would like to Remove");
+        String game = "Game";
+        String publisher = "Publisher";
+        String reviewer = "Reviewer";
+        String review = "Review";
+
+        List<String> options = new ArrayList<>();
+        options.add(game);
+        options.add(publisher);
+        options.add(reviewer);
+        options.add(review);
+
+        //The user must select from a publisher already stored in the DB
+        ComboBox<String> comboBox = new ComboBox<>(FXCollections.observableArrayList(options));
+
+        Button enterButton = new Button("Enter");
+        enterButton.setMinWidth(50);
+
+        //Add labels, textfields and buttons to the vbox
+        VBox selectionBox = new VBox();
+        selectionBox.getChildren().addAll(selectionLabel,comboBox);
+
+        //When the button is clicked, all new game info is inserted into the DB
+        enterButton.setOnAction(e -> {
+            switch (comboBox.getValue())
+            {
+                case "Game":
+                    ret.getChildren().clear();
+                    ret.getChildren().add(removeGame(wrapper));
+                    break;
+                case "Publisher":
+                    ret.getChildren().clear();
+                    ret.getChildren().add(removePublisher(wrapper));
+                    break;
+                case "Reviewer":
+                    ret.getChildren().clear();
+                    ret.getChildren().add(removeReviewer(wrapper));
+                    break;
+                case "Review":
+                    ret.getChildren().clear();
+                    ret.getChildren().add(removeReview(wrapper));
+                    break;
+            }
+
+        });
+
+        //Adjust spacing/margins of items
+        ret.getChildren().addAll(selectionBox,enterButton);
+        ret.setSpacing(20);
+        ret.setMargin(selectionBox,new Insets(15, 40, 0, 40));
+        ret.setAlignment(Pos.CENTER);
+
+        //bind vbox to parent element
+        ret.prefHeightProperty().bind(wrapper.heightProperty());
+        ret.prefWidthProperty().bind(wrapper.widthProperty());
+
+        return ret;
+    }
+
+    public VBox removeGame(Pane wrapper)
+    {
+        VBox ret = new VBox();
+        List<String> gameNames = dbOps.getGameNames();
+
+        Label selectionLabel = new Label("Select game you would like to remove");
+
+        ComboBox<String> choice = new ComboBox<>(FXCollections.observableArrayList(gameNames));
+        Button editButton = new Button("Remove");
+        VBox select = new VBox();
+
+        select.getChildren().addAll(selectionLabel,choice);
+
+        editButton.setOnAction(e -> {
+            dbOps.removeGame(choice.getValue());
+            ret.getChildren().clear();
+        });
+
+        ret.getChildren().addAll(select,editButton);
+
+        ret.setSpacing(20);
+        ret.setMargin(select,new Insets(15, 40, 0, 40));
+        ret.setAlignment(Pos.CENTER);
+
+        ret.prefHeightProperty().bind(wrapper.heightProperty());
+        ret.prefWidthProperty().bind(wrapper.widthProperty());
+
+
+        return ret;
+    }
+
+    public VBox removePublisher(Pane wrapper)
+    {
+        List<String> pubNames = dbOps.getPublisherNames();
+        VBox ret = new VBox();
+        Label selectionLabel = new Label("Select publisher you would like to remove");
+
+        ComboBox<String> choice = new ComboBox<>(FXCollections.observableArrayList(pubNames));
+        Button editButton = new Button("Remove");
+        VBox select = new VBox();
+
+        select.getChildren().addAll(selectionLabel,choice);
+
+        editButton.setOnAction(e -> {
+            dbOps.removePublisher(choice.getValue());
+            ret.getChildren().clear();
+        });
+
+        ret.getChildren().addAll(select,editButton);
+
+        ret.setSpacing(20);
+        ret.setMargin(select,new Insets(15, 40, 0, 40));
+        ret.setAlignment(Pos.CENTER);
+
+        ret.prefHeightProperty().bind(wrapper.heightProperty());
+        ret.prefWidthProperty().bind(wrapper.widthProperty());
+
+
+        return ret;
+    }
+
+    public VBox removeReviewer(Pane wrapper)
+    {
+        List<String> reviewerNames = dbOps.getReviewerNames();
+        VBox ret = new VBox();
+        Label selectionLabel = new Label("Select Reviewer You wish to remove");
+
+        ComboBox<String> choice = new ComboBox<>(FXCollections.observableArrayList(reviewerNames));
+        Button editButton = new Button("Remove");
+        VBox select = new VBox();
+
+        select.getChildren().addAll(selectionLabel,choice);
+
+        editButton.setOnAction(e -> {
+            dbOps.removeReviewer(choice.getValue());
+            ret.getChildren().clear();
+        });
+
+        ret.getChildren().addAll(select,editButton);
+
+        ret.setSpacing(20);
+        ret.setMargin(select,new Insets(15, 40, 0, 40));
+        ret.setAlignment(Pos.CENTER);
+
+        ret.prefHeightProperty().bind(wrapper.heightProperty());
+        ret.prefWidthProperty().bind(wrapper.widthProperty());
+
+
+        return ret;
+    }
+
+    public VBox removeReview(Pane wrapper)
+    {
+        List<String> reviewerNames = dbOps.getReviewerNames();
+        VBox ret = new VBox();
+        Label selectionLabel = new Label("Select Reviewer");
+
+        ComboBox<String> choice = new ComboBox<>(FXCollections.observableArrayList(reviewerNames));
+        Button editButton = new Button("Enter");
+        VBox select = new VBox();
+
+        select.getChildren().addAll(selectionLabel,choice);
+
+        editButton.setOnAction(e -> {
+            ret.getChildren().clear();
+            ret.getChildren().addAll(selectGameForDeletion(wrapper,choice.getValue()));
+        });
+
+        ret.getChildren().addAll(select,editButton);
+
+        ret.setSpacing(20);
+        ret.setMargin(select,new Insets(15, 40, 0, 40));
+        ret.setAlignment(Pos.CENTER);
+
+        ret.prefHeightProperty().bind(wrapper.heightProperty());
+        ret.prefWidthProperty().bind(wrapper.widthProperty());
+
+
+        return ret;
+    }
+
+    public VBox selectGameForDeletion(Pane wrapper,String reviewer)
+    {
+        List<String> gameNames = dbOps.gamesReviewed(reviewer);
+        VBox ret = new VBox();
+        Label selectionLabel = new Label("Select Game");
+
+        ComboBox<String> choice = new ComboBox<>(FXCollections.observableArrayList(gameNames));
+        Button editButton = new Button("Remove");
+        VBox select = new VBox();
+
+        select.getChildren().addAll(selectionLabel,choice);
+
+        editButton.setOnAction(e -> {
+            dbOps.removeReview(reviewer,choice.getValue());
+            ret.getChildren().clear();
+        });
+
+        ret.getChildren().addAll(select,editButton);
+
+        ret.setSpacing(20);
+        ret.setMargin(select,new Insets(15, 40, 0, 40));
+        ret.setAlignment(Pos.CENTER);
+
+        ret.prefHeightProperty().bind(wrapper.heightProperty());
+        ret.prefWidthProperty().bind(wrapper.widthProperty());
+
+
+        return ret;
+    }
 
 }
