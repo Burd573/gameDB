@@ -50,3 +50,10 @@ SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));
 
 - [x] Remove any row of data from any table selected by drop-down menus.
 
+## Video Link
+
+https://www.youtube.com/watch?v=FL_PW8iKXQM&t=1s
+
+## Google Doc
+
+https://docs.google.com/document/d/1fqBtIOYJYeSYIyhu7k8YU8BjgNRB-TmhAbUHmfxWMWE/edit?usp=sharing
