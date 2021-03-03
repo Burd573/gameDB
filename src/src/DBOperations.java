@@ -903,7 +903,7 @@ public class DBOperations
 
 
 
-    public void close(Statement stmt, ResultSet rs, PreparedStatement pstmt)
+    public void close()
     {
         try
         {
@@ -918,6 +918,10 @@ public class DBOperations
             if (stmt != null)
             {
                 stmt.close();
+            }
+            if (conn != null)
+            {
+                conn.close();
             }
         } catch (SQLException e)
         {

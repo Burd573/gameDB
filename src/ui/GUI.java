@@ -54,11 +54,11 @@ public class GUI extends Application
         Label driverUrlLabel = new Label("Enter the url for the driver: ");
 
         //Create textfield for user to enter information
-        TextField dbURLField = new TextField("jdbc:mysql://localhost/game_db?autoReconnect=true&useSSL= false");
-        TextField uNameField = new TextField("root");
+        TextField dbURLField = new TextField();
+        TextField uNameField = new TextField();
         //change to password field later
-        TextField pwdField = new TextField("Cardinals2112");
-        TextField driverURLField = new TextField("com.mysql.cj.jdbc.Driver");
+        PasswordField pwdField = new PasswordField();
+        TextField driverURLField = new TextField();
 
         //Add the labels and textfields to the gridpane at their appropriate spots
         gridpane.add(dbUrlLabel,0,0);
@@ -301,6 +301,20 @@ public class GUI extends Application
             stage.sizeToScene();
             wrapperPane.getChildren().clear();
             wrapperPane.getChildren().add(deleteData(wrapperPane));
+        });
+
+        stage.setOnCloseRequest(e -> {
+            dbOps.close();
+            try
+            {
+                if (conn != null)
+                {
+                    conn.close();
+                }
+            }catch(SQLException ex)
+            {
+                ex.printStackTrace();
+            }
         });
 
         //show the stage containing all elements of main menu
