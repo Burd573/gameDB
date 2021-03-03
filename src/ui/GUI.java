@@ -28,6 +28,8 @@ public class GUI extends Application
 
     Connection conn = null;
 
+    DBOperations dbOps;
+
 
     @Override
     public void start(Stage primaryStage)
@@ -52,11 +54,11 @@ public class GUI extends Application
         Label driverUrlLabel = new Label("Enter the url for the driver: ");
 
         //Create textfield for user to enter information
-        TextField dbURLField = new TextField("jdbc:mysql://localhost/game_db?autoReconnect=true&useSSL= false");
-        TextField uNameField = new TextField("root");
+        TextField dbURLField = new TextField();
+        TextField uNameField = new TextField();
         //change to password field later
-        TextField pwdField = new TextField("Cardinals2112");
-        TextField driverURLField = new TextField("com.mysql.cj.jdbc.Driver");;
+        PasswordField pwdField = new PasswordField();
+        TextField driverURLField = new TextField();
 
         //Add the labels and textfields to the gridpane at their appropriate spots
         gridpane.add(dbUrlLabel,0,0);
@@ -78,7 +80,7 @@ public class GUI extends Application
         vbox.getChildren().addAll(gridpane,okButton);
         vbox.setAlignment(Pos.CENTER);
         vbox.setMinSize(250,150);
-        vbox.setMargin(gridpane,new Insets(10,10,10,10));
+        VBox.setMargin(gridpane,new Insets(10,10,10,10));
 
         //add the vbox to scene which gets added to the stage.
         Scene scene = new Scene(vbox);
@@ -116,6 +118,7 @@ public class GUI extends Application
             //Establish connection to database
             Class.forName(dbInput.get("driverUrl"));
             conn = DriverManager.getConnection(_url, userName, pwd);
+            dbOps = new DBOperations(conn);
             showMainMenu();
         //Print error messages showing what went wrong. Should probably be GUI pop-ups
         }  catch(ClassNotFoundException e)
@@ -126,7 +129,7 @@ public class GUI extends Application
             System.out.println("Incorrect Login Info");
         }catch (SQLException e)
         {
-            System.out.println("Incorrect Database URL");;
+            System.out.println("Incorrect Database URL");
         }
     }
 
@@ -205,13 +208,9 @@ public class GUI extends Application
         Button deleteDataButton = new Button("Remove Data");
         deleteDataButton.setMinSize(100,50);
 
-        //Add Buttons to their columns. Should probably switch them around - is a little convoluted
-        col1Buttons.getChildren().addAll(showGamesButton, gameInfoButton, addGamesButton,showPublisherButton, publisherInfoButton,
-                addPublisherButton,deleteDataButton);
-
-        col2Buttons.getChildren().addAll(showReviewersButton,reviewerInfoButton,addReviewersButton,addReviewButton,platformInfoButton,
-                genreInfoButton,editDataButton);
-
+        //Add Buttons to their columns.
+        col1Buttons.getChildren().addAll(gameInfoButton,publisherInfoButton, reviewerInfoButton, platformInfoButton, genreInfoButton, deleteDataButton, editDataButton);
+        col2Buttons.getChildren().addAll(showGamesButton,showPublisherButton,showReviewersButton,addGamesButton,addPublisherButton,addReviewersButton,addReviewButton);
         //Add Columns of buttons to their hbox
         buttons.getChildren().addAll(col1Buttons,col2Buttons);
 
@@ -265,7 +264,7 @@ public class GUI extends Application
         gameInfoButton.setOnAction(e -> {
             stage.sizeToScene();
             wrapperPane.getChildren().clear();
-            wrapperPane.getChildren().add(selectGame(wrapperPane));
+            wrapperPane.getChildren().add(selectGameAdd(wrapperPane));
         });
 
         platformInfoButton.setOnAction( e -> {
@@ -285,6 +284,39 @@ public class GUI extends Application
             wrapperPane.getChildren().clear();
             wrapperPane.getChildren().add(genreInfo(wrapperPane));
         });
+
+        reviewerInfoButton.setOnAction( e -> {
+            stage.sizeToScene();
+            wrapperPane.getChildren().clear();
+            wrapperPane.getChildren().add(reviewerInfo(wrapperPane));
+        });
+
+        editDataButton.setOnAction(e -> {
+            stage.sizeToScene();
+            wrapperPane.getChildren().clear();
+            wrapperPane.getChildren().add(editData(wrapperPane));
+        });
+
+        deleteDataButton.setOnAction(e -> {
+            stage.sizeToScene();
+            wrapperPane.getChildren().clear();
+            wrapperPane.getChildren().add(deleteData(wrapperPane));
+        });
+
+        stage.setOnCloseRequest(e -> {
+            dbOps.close();
+            try
+            {
+                if (conn != null)
+                {
+                    conn.close();
+                }
+            }catch(SQLException ex)
+            {
+                ex.printStackTrace();
+            }
+        });
+
         //show the stage containing all elements of main menu
         stage.show();
     }
@@ -352,7 +384,7 @@ public class GUI extends Application
      */
     public void enterGameTableData(TableView table)
     {
-        DBOperations dbOps = new DBOperations(conn);
+//        DBOperations dbOps = new DBOperations(conn);
         TableColumn<GameList, String> gameNameCol = new TableColumn<>("Game Name");
         gameNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
 
@@ -387,7 +419,7 @@ public class GUI extends Application
      */
     public void enterPublisherTableData(TableView table)
     {
-        DBOperations dbOps = new DBOperations(conn);
+//        DBOperations dbOps = new DBOperations(conn);
         TableColumn<GameList, String> pubNameCol = new TableColumn<>("Publisher Name");
         pubNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
 
@@ -422,7 +454,7 @@ public class GUI extends Application
      */
     public void enterReviewerTableData(TableView table)
     {
-        DBOperations dbOps = new DBOperations(conn);
+//        DBOperations dbOps = new DBOperations(conn);
         TableColumn<GameList, String> reviewerNameCol = new TableColumn<>("Reviewer Name");
         reviewerNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
 
@@ -457,7 +489,7 @@ public class GUI extends Application
         Label pubName = new Label("Publisher");
 
         //Get a list of the publishers currently in the DB
-        DBOperations dbOps = new DBOperations(conn);
+//        DBOperations dbOps = new DBOperations(conn);
         List<String> names = dbOps.getPublisherNames();
 
         //Textfields for users to enter data
@@ -492,15 +524,18 @@ public class GUI extends Application
         //When the button is clicked, all new game info is inserted into the DB
         enterButton.setOnAction(e -> {
             dbOps.addGame(comboBox.getValue(),gameGenreInput.getText(),gameNameInput.getText(),releaseYearInput.getText());
+            gameGenreInput.clear();
+            gameNameInput.clear();
+            releaseYearInput.clear();
         });
 
         //Adjust spacing/margins of items
         vbox.getChildren().addAll(nameBox,genreBox,yearBox,pubBox,enterButton);
         vbox.setSpacing(20);
-        vbox.setMargin(nameBox,new Insets(15, 40, 0, 40));
-        vbox.setMargin(genreBox,new Insets(10, 40, 0, 40));
-        vbox.setMargin(yearBox,new Insets(10, 40, 0, 40));
-        vbox.setMargin(pubBox,new Insets(10, 40, 15, 40));
+        VBox.setMargin(nameBox,new Insets(15, 40, 0, 40));
+        VBox.setMargin(genreBox,new Insets(10, 40, 0, 40));
+        VBox.setMargin(yearBox,new Insets(10, 40, 0, 40));
+        VBox.setMargin(pubBox,new Insets(10, 40, 15, 40));
         vbox.setAlignment(Pos.CENTER);
 
         //bind vbox to parent element
@@ -520,7 +555,7 @@ public class GUI extends Application
     public VBox addPublisher(Pane wrapper)
     {
         VBox vbox = new VBox();
-        DBOperations dbOps = new DBOperations(conn);
+//        DBOperations dbOps = new DBOperations(conn);
 
         //Labels instructing the user which data to enter
         Label pubName = new Label("Publisher Name");
@@ -559,15 +594,19 @@ public class GUI extends Application
         //When the button is clicked, all new publisher info is inserted into the DB
         enterButton.setOnAction(e -> {
             dbOps.addPublisher(pubNameInput.getText(),pubCityInput.getText(),pubStateInput.getText(),pubCountryInput.getText());
+            pubNameInput.clear();
+            pubCityInput.clear();
+            pubStateInput.clear();
+            pubCountryInput.clear();
         });
 
         vbox.getChildren().addAll(nameBox,cityBox,stateBox,countryBox,enterButton);
 
         vbox.setSpacing(20);
-        vbox.setMargin(nameBox,new Insets(15, 40, 0, 40));
-        vbox.setMargin(cityBox,new Insets(10, 40, 0, 40));
-        vbox.setMargin(stateBox,new Insets(10, 40, 0, 40));
-        vbox.setMargin(countryBox,new Insets(10, 40, 15, 40));
+        VBox.setMargin(nameBox,new Insets(15, 40, 0, 40));
+        VBox.setMargin(cityBox,new Insets(10, 40, 0, 40));
+        VBox.setMargin(stateBox,new Insets(10, 40, 0, 40));
+        VBox.setMargin(countryBox,new Insets(10, 40, 15, 40));
         vbox.setAlignment(Pos.CENTER);
 
         vbox.prefHeightProperty().bind(wrapper.heightProperty());
@@ -586,7 +625,7 @@ public class GUI extends Application
     {
         VBox vbox = new VBox();
 
-        DBOperations dbOps = new DBOperations(conn);
+//        DBOperations dbOps = new DBOperations(conn);
 
         Label reviewerName = new Label("Reviewer Name");
 
@@ -601,11 +640,12 @@ public class GUI extends Application
 
         enterButton.setOnAction(e -> {
             dbOps.addReviewer(reviewerNameInput.getText());
+            reviewerNameInput.clear();
         });
 
         vbox.getChildren().addAll(nameBox,enterButton);
         vbox.setSpacing(30);
-        vbox.setMargin(nameBox,new Insets(30,40,10,40));
+        VBox.setMargin(nameBox,new Insets(30,40,10,40));
         vbox.setAlignment(Pos.CENTER);
 
         vbox.prefHeightProperty().bind(wrapper.heightProperty());
@@ -624,7 +664,7 @@ public class GUI extends Application
     {
         VBox vBox = new VBox();
 
-        DBOperations dbOps = new DBOperations(conn);
+//        DBOperations dbOps = new DBOperations(conn);
         List<String> reviewerNames = dbOps.getReviewerNames();
         List<String> gameNames = dbOps.getGameNames();
 
@@ -658,15 +698,17 @@ public class GUI extends Application
         enterButton.setMinWidth(50);
         enterButton.setOnAction(e -> {
             dbOps.addReview(reviewerComboBox.getValue(),gameComboBox.getValue(),Double.parseDouble(ratingInput.getText()),commentInput.getText());
+            ratingInput.clear();
+            commentInput.clear();
         });
 
         vBox.getChildren().addAll(reviewerNameBox,gameNameBox,ratingBox,commentBox,enterButton);
 
         vBox.setSpacing(20);
-        vBox.setMargin(reviewerNameBox,new Insets(15, 40, 0, 40));
-        vBox.setMargin(gameNameBox,new Insets(10, 40, 0, 40));
-        vBox.setMargin(ratingBox,new Insets(10, 40, 0, 40));
-        vBox.setMargin(commentBox,new Insets(10, 40, 15, 40));
+        VBox.setMargin(reviewerNameBox,new Insets(15, 40, 0, 40));
+        VBox.setMargin(gameNameBox,new Insets(10, 40, 0, 40));
+        VBox.setMargin(ratingBox,new Insets(10, 40, 0, 40));
+        VBox.setMargin(commentBox,new Insets(10, 40, 15, 40));
         vBox.setAlignment(Pos.CENTER);
 
         vBox.prefHeightProperty().bind(wrapper.heightProperty());
@@ -681,13 +723,13 @@ public class GUI extends Application
      * @param wrapper wrapper class the vbox is placed into
      * @return vbox containing menu
      */
-    public VBox selectGame(Pane wrapper)
+    public VBox selectGameAdd(Pane wrapper)
     {
         VBox getSelection = new VBox();
 
-        DBOperations dbOps = new DBOperations(conn);
+//        DBOperations dbOps = new DBOperations(conn);
         List<String> gameNames = dbOps.getGameNames();
-        Label gameName = new Label("Select Game You Wish to View");
+        Label gameName = new Label("Select Game");
         ComboBox<String> gameComboBox = new ComboBox<>(FXCollections.observableArrayList(gameNames));
 
         Button enterButton = new Button("Enter");
@@ -703,7 +745,7 @@ public class GUI extends Application
 
         getSelection.getChildren().addAll(nameBox,enterButton);
         getSelection.setSpacing(30);
-        getSelection.setMargin(nameBox,new Insets(30,40,10,40));
+        VBox.setMargin(nameBox,new Insets(30,40,10,40));
         getSelection.setAlignment(Pos.CENTER);
 
         getSelection.prefHeightProperty().bind(wrapper.heightProperty());
@@ -778,7 +820,7 @@ public class GUI extends Application
      */
     public void enterGameReviewTableData(TableView table,String name)
     {
-        DBOperations dbOps = new DBOperations(conn);
+//        DBOperations dbOps = new DBOperations(conn);
         TableColumn<GameReviewsInfo, String> reviewerNameCol = new TableColumn<>("Reviewer Name");
         reviewerNameCol.setCellValueFactory(new PropertyValueFactory<>("reviewerName"));
 
@@ -801,7 +843,7 @@ public class GUI extends Application
      */
     public TableView showGamePlatforms(Pane wrapper,String name)
     {
-        TableView table = new TableView();
+        var table = new TableView();
 
         enterGamePlatformTableData(table,name);
 
@@ -818,12 +860,12 @@ public class GUI extends Application
      */
     public void enterGamePlatformTableData(TableView table,String name)
     {
-        DBOperations dbOps = new DBOperations(conn);
+//        DBOperations dbOps = new DBOperations(conn);
         TableColumn<PlatformGamesInfo, String> platformNameCol = new TableColumn<>("Platform Name");
         platformNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
 
         table.getColumns().addAll(platformNameCol);
-        table.getItems().addAll(dbOps.getPlatformGames(name));
+        table.getItems().addAll(dbOps.getGamePlatforms(name));
     }
 
     /**
@@ -838,7 +880,7 @@ public class GUI extends Application
         VBox ret = new VBox();
         HBox select = new HBox();
 
-        DBOperations dbOps = new DBOperations(conn);
+//        DBOperations dbOps = new DBOperations(conn);
         List<String> platformNames = dbOps.getPlatformNames();
 
         Label choiceSelection = new Label("Select Platform");
@@ -883,7 +925,7 @@ public class GUI extends Application
      */
     public void enterPlatformGamesTableData(TableView table,String name)
     {
-        DBOperations dbOps = new DBOperations(conn);
+//        DBOperations dbOps = new DBOperations(conn);
         TableColumn<PlatformGamesInfo, String> gameNameCol = new TableColumn<>("Game Name");
         gameNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
 
@@ -891,12 +933,89 @@ public class GUI extends Application
         table.getItems().addAll(dbOps.getPlatformGames(name));
     }
 
+    /**
+     * Menu to select a reviewer. We can view all reviews made by that reviewer
+     * selected reviewer name
+     *
+     * @param wrapper wrapper class the vbox is placed into
+     * @return vbox containing the menu
+     */
+    public VBox reviewerInfo(Pane wrapper)
+    {
+        VBox ret = new VBox();
+        HBox select = new HBox();
+
+//        DBOperations dbOps = new DBOperations(conn);
+        List<String> reviewerNames = dbOps.getReviewerNames();
+
+        Label choiceSelection = new Label("Select Reviewer");
+        ComboBox<String> choice = new ComboBox<>(FXCollections.observableArrayList(reviewerNames));
+
+        Button okButton = new Button("OK");
+
+        select.getChildren().addAll(choiceSelection,choice,okButton);
+
+        okButton.setOnAction(e -> {
+            ret.getChildren().clear();
+            ret.getChildren().addAll(showReviewerReviews(wrapper,choice.getValue()));
+        });
+
+        ret.getChildren().addAll(select);
+        return ret;
+    }
+
+    /**
+     * Show all reviews that made by a specific reviewer
+     *
+     * @param wrapper wrapper class the vbox is placed into
+     * @param name game that the information is related to
+     * @return vbox containing the menu
+     */
+    public TableView showReviewerReviews(Pane wrapper,String name)
+    {
+        TableView table = new TableView();
+
+        enterReviewerReviewsTableData(table,name);
+
+        table.prefHeightProperty().bind(wrapper.heightProperty());
+        table.prefWidthProperty().bind(wrapper.widthProperty());
+        return table;
+    }
+
+    /**
+     * Enter the reviews data for specific reviewer into table
+     *
+     * @param table table data is inserted into
+     * @param name of the reviewer
+     */
+    public void enterReviewerReviewsTableData(TableView table,String name)
+    {
+//        DBOperations dbOps = new DBOperations(conn);
+        TableColumn<ReviewerInfo, String> reviewerNameCol = new TableColumn<>("Game Name");
+        reviewerNameCol.setCellValueFactory(new PropertyValueFactory<>("GameName"));
+
+        TableColumn<ReviewerInfo, String> reviewCol = new TableColumn<>("Review");
+        reviewCol.setCellValueFactory(new PropertyValueFactory<>("review"));
+
+        TableColumn<ReviewerInfo, String> ratingCol = new TableColumn<>("Rating");
+        ratingCol.setCellValueFactory(new PropertyValueFactory<>("rating"));
+
+        table.getColumns().addAll(reviewerNameCol,reviewCol,ratingCol);
+        table.getItems().addAll(dbOps.getReviewerInfo(name));
+    }
+
+    /**
+     * Menu for selecting a specific publisher to view
+     *
+     * @param wrapper wrapper class the vbox is placed into
+     * @return menu for selecting publisher
+     */
     public VBox publisherInfo(Pane wrapper)
     {
         VBox ret = new VBox();
         HBox select = new HBox();
 
-        DBOperations dbOps = new DBOperations(conn);
+//        DBOperations dbOps = new DBOperations(conn);
         List<String> pubNames = dbOps.getPublisherNames();
 
         Label choiceSelection = new Label("Select Publisher");
@@ -915,6 +1034,13 @@ public class GUI extends Application
         return ret;
     }
 
+    /**
+     * Create table showing all of the games from a specific publisher
+     *
+     * @param wrapper wrapper class the vbox is placed into
+     * @param name of publisher
+     * @return table with all games from a specific publisher
+     */
     public TableView showPublisherGames(Pane wrapper,String name)
     {
         TableView table = new TableView();
@@ -926,9 +1052,15 @@ public class GUI extends Application
         return table;
     }
 
+    /**
+     * Insert values into publihser games table
+     *
+     * @param table to insert values into
+     * @param name of publisher
+     */
     public void enterPublisherGamesTableData(TableView table,String name)
     {
-        DBOperations dbOps = new DBOperations(conn);
+//        DBOperations dbOps = new DBOperations(conn);
         TableColumn<PublisherInfo, String> gameNameCol = new TableColumn<>("Game Name");
         gameNameCol.setCellValueFactory(new PropertyValueFactory<>("GameName"));
 
@@ -939,12 +1071,18 @@ public class GUI extends Application
         table.getItems().addAll(dbOps.getPublisherGames(name));
     }
 
+    /**
+     * Menu to select genre to view
+     *
+     * @param wrapper wrapper class the vbox is placed into
+     * @return menu
+     */
     public VBox genreInfo(Pane wrapper)
     {
         VBox ret = new VBox();
         HBox select = new HBox();
 
-        DBOperations dbOps = new DBOperations(conn);
+//        DBOperations dbOps = new DBOperations(conn);
         List<String> genres = dbOps.getGenreNames();
 
         Label choiceSelection = new Label("Select Genre");
@@ -963,6 +1101,13 @@ public class GUI extends Application
         return ret;
     }
 
+    /**
+     * Show the table of all games of a specified genre
+     *
+     * @param wrapper wrapper class the vbox is placed into
+     * @param name name of genre
+     * @return table showing all games of specified genre
+     */
     public TableView showGenreGames(Pane wrapper,String name)
     {
         TableView table = new TableView();
@@ -974,9 +1119,15 @@ public class GUI extends Application
         return table;
     }
 
+    /**
+     * Enter games for a specified genre into table
+     *
+     * @param table to enter games into
+     * @param name of genre
+     */
     public void enterGenreGamesTableData(TableView table,String name)
     {
-        DBOperations dbOps = new DBOperations(conn);
+//        DBOperations dbOps = new DBOperations(conn);
         TableColumn<GenreInfo, String> genreNameCol = new TableColumn<>("Game Name");
         genreNameCol.setCellValueFactory(new PropertyValueFactory<>("GameName"));
 
@@ -985,6 +1136,610 @@ public class GUI extends Application
 
         table.getColumns().addAll(genreNameCol,ratingCol);
         table.getItems().addAll(dbOps.getGenreInfo(name));
+    }
+
+    public VBox editData(Pane wrapper)
+    {
+        VBox ret = new VBox();
+        //Labels instructing the user which data to enter
+        Label selectionLabel = new Label("Select what you would like to edit");
+        String game = "Game";
+        String publisher = "Publisher";
+        String reviewer = "Reviewer";
+        String review = "Review";
+//        String platform = "Platform";
+
+        List<String> options = new ArrayList<>();
+        options.add(game);
+        options.add(publisher);
+        options.add(reviewer);
+        options.add(review);
+//        options.add(platform);
+
+        //The user must select from a publisher already stored in the DB
+        ComboBox<String> comboBox = new ComboBox<>(FXCollections.observableArrayList(options));
+
+        Button enterButton = new Button("Enter");
+        enterButton.setMinWidth(50);
+
+        //Add labels, textfields and buttons to the vbox
+        VBox selectionBox = new VBox();
+        selectionBox.getChildren().addAll(selectionLabel,comboBox);
+
+        //When the button is clicked, all new game info is inserted into the DB
+        enterButton.setOnAction(e -> {
+            switch (comboBox.getValue())
+            {
+                case "Game":
+                    ret.getChildren().clear();
+                    ret.getChildren().add(editGameData(wrapper));
+                    break;
+                case "Publisher":
+                    ret.getChildren().clear();
+                    ret.getChildren().add(editPublisherData(wrapper));
+                    break;
+                case "Reviewer":
+                    ret.getChildren().clear();
+                    ret.getChildren().add(editReviewerData(wrapper));
+                    break;
+                case "Review":
+                    ret.getChildren().clear();
+                    ret.getChildren().add(selectReviewer(wrapper));
+                    break;
+            }
+
+        });
+
+        //Adjust spacing/margins of items
+        ret.getChildren().addAll(selectionBox,enterButton);
+        ret.setSpacing(20);
+        ret.setMargin(selectionBox,new Insets(15, 40, 0, 40));
+        ret.setAlignment(Pos.CENTER);
+
+        //bind vbox to parent element
+        ret.prefHeightProperty().bind(wrapper.heightProperty());
+        ret.prefWidthProperty().bind(wrapper.widthProperty());
+
+        return ret;
+    }
+
+    public VBox editGameData(Pane wrapper)
+    {
+        VBox ret = new VBox();
+        List<String> gameNames = dbOps.getGameNames();
+
+        Label selectionLabel = new Label("Select game you would like to edit");
+
+        ComboBox<String> choice = new ComboBox<>(FXCollections.observableArrayList(gameNames));
+        Button editButton = new Button("Edit");
+        VBox select = new VBox();
+
+        select.getChildren().addAll(selectionLabel,choice);
+
+        editButton.setOnAction(e -> {
+            ret.getChildren().clear();
+            ret.getChildren().addAll(enterNewGameData(wrapper,choice.getValue()));
+        });
+
+        ret.getChildren().addAll(select,editButton);
+
+        ret.setSpacing(20);
+        ret.setMargin(select,new Insets(15, 40, 0, 40));
+        ret.setAlignment(Pos.CENTER);
+
+        ret.prefHeightProperty().bind(wrapper.heightProperty());
+        ret.prefWidthProperty().bind(wrapper.widthProperty());
+
+
+        return ret;
+    }
+
+    public VBox enterNewGameData(Pane wrapper, String gameName)
+    {
+        VBox ret = new VBox();
+        Label nameLabel = new Label("Game Name");
+        Label genreLabel = new Label("Game Genre");
+
+        TextField gameNameInput = new TextField();
+        gameNameInput.setMinWidth(200);
+
+        TextField gameGenreInput = new TextField();
+        gameGenreInput.setMinWidth(200);
+
+        //Add labels, textfields and buttons to the vbox
+        VBox nameBox = new VBox();
+        nameBox.getChildren().addAll(nameLabel,gameNameInput);
+
+        VBox genreBox = new VBox();
+        genreBox.getChildren().addAll(genreLabel,gameGenreInput);
+
+        Button enterButton = new Button("Enter");
+        enterButton.setMinWidth(50);
+
+        enterButton.setOnAction(e -> {
+            dbOps.updateGame(gameName,gameNameInput.getText(),gameGenreInput.getText());
+            gameNameInput.clear();
+            gameGenreInput.clear();
+        });
+
+        ret.getChildren().addAll(nameBox,genreBox,enterButton);
+
+        ret.setSpacing(20);
+        ret.setMargin(nameBox,new Insets(15, 40, 0, 40));
+        ret.setMargin(genreBox,new Insets(10, 40, 0, 40));
+        ret.setAlignment(Pos.CENTER);
+
+        ret.prefHeightProperty().bind(wrapper.heightProperty());
+        ret.prefWidthProperty().bind(wrapper.widthProperty());
+
+        return ret;
+    }
+
+    public VBox editPublisherData(Pane wrapper)
+    {
+        List<String> pubNames = dbOps.getPublisherNames();
+        VBox ret = new VBox();
+        Label selectionLabel = new Label("Select publisher you would like to edit");
+
+        ComboBox<String> choice = new ComboBox<>(FXCollections.observableArrayList(pubNames));
+        Button editButton = new Button("Edit");
+        VBox select = new VBox();
+
+        select.getChildren().addAll(selectionLabel,choice);
+
+        editButton.setOnAction(e -> {
+            ret.getChildren().clear();
+            ret.getChildren().addAll(enterNewPublisherData(wrapper,choice.getValue()));
+        });
+
+        ret.getChildren().addAll(select,editButton);
+
+        ret.setSpacing(20);
+        ret.setMargin(select,new Insets(15, 40, 0, 40));
+        ret.setAlignment(Pos.CENTER);
+
+        ret.prefHeightProperty().bind(wrapper.heightProperty());
+        ret.prefWidthProperty().bind(wrapper.widthProperty());
+
+
+        return ret;
+    }
+
+    public VBox enterNewPublisherData(Pane wrapper, String pubName)
+    {
+        VBox ret = new VBox();
+        Label nameLabel = new Label("Publisher Name");
+        Label cityLabel = new Label("Publisher City");
+        Label stateLabel = new Label("Publisher State");
+        Label countryLabel = new Label("Publisher Country");
+
+        TextField pubNameInput = new TextField();
+        pubNameInput.setMinWidth(200);
+
+        TextField pubCityInput = new TextField();
+        pubCityInput.setMinWidth(200);
+
+        TextField pubStateInput = new TextField();
+        pubStateInput.setMinWidth(200);
+
+        TextField pubCountryInput = new TextField();
+        pubCountryInput.setMinWidth(200);
+
+        //Add labels, textfields and buttons to the vbox
+        VBox nameBox = new VBox();
+        nameBox.getChildren().addAll(nameLabel,pubNameInput);
+
+        VBox cityBox = new VBox();
+        cityBox.getChildren().addAll(cityLabel,pubCityInput);
+
+        VBox stateBox = new VBox();
+        stateBox.getChildren().addAll(stateLabel,pubStateInput);
+
+        VBox countryBox = new VBox();
+        countryBox.getChildren().addAll(countryLabel,pubCountryInput);
+
+        Button enterButton = new Button("Enter");
+        enterButton.setMinWidth(50);
+
+        enterButton.setOnAction(e -> {
+            dbOps.updatePublisher(pubName,pubNameInput.getText(),pubCityInput.getText(),pubStateInput.getText(),pubCountryInput.getText());
+            pubNameInput.clear();
+            pubCityInput.clear();
+            pubStateInput.clear();
+            pubCountryInput.clear();
+        });
+
+        ret.getChildren().addAll(nameBox,cityBox,stateBox,countryBox,enterButton);
+
+        ret.setSpacing(20);
+        ret.setMargin(nameBox,new Insets(15, 40, 0, 40));
+        ret.setMargin(cityBox,new Insets(10, 40, 0, 40));
+        ret.setMargin(stateBox,new Insets(10, 40, 0, 40));
+        ret.setMargin(countryBox,new Insets(10, 40, 15, 40));
+        ret.setAlignment(Pos.CENTER);
+
+        ret.prefHeightProperty().bind(wrapper.heightProperty());
+        ret.prefWidthProperty().bind(wrapper.widthProperty());
+
+        return ret;
+    }
+
+    public VBox editReviewerData(Pane wrapper)
+    {
+        List<String> reviewerNames = dbOps.getReviewerNames();
+        VBox ret = new VBox();
+        Label selectionLabel = new Label("Select Reviewer you would like to edit");
+
+        ComboBox<String> choice = new ComboBox<>(FXCollections.observableArrayList(reviewerNames));
+        Button editButton = new Button("Edit");
+        VBox select = new VBox();
+
+        select.getChildren().addAll(selectionLabel,choice);
+
+        editButton.setOnAction(e -> {
+            ret.getChildren().clear();
+            ret.getChildren().addAll(enterNewReviewerData(wrapper,choice.getValue()));
+        });
+
+        ret.getChildren().addAll(select,editButton);
+
+        ret.setSpacing(20);
+        ret.setMargin(select,new Insets(15, 40, 0, 40));
+        ret.setAlignment(Pos.CENTER);
+
+        ret.prefHeightProperty().bind(wrapper.heightProperty());
+        ret.prefWidthProperty().bind(wrapper.widthProperty());
+
+
+        return ret;
+    }
+
+    public VBox enterNewReviewerData(Pane wrapper, String reviewerName)
+    {
+        VBox ret = new VBox();
+        Label nameLabel = new Label("Reviewer Name");
+
+        TextField reviewerNameInput = new TextField();
+        reviewerNameInput.setMinWidth(200);
+
+        //Add labels, textfields and buttons to the vbox
+        VBox nameBox = new VBox();
+        nameBox.getChildren().addAll(nameLabel,reviewerNameInput);
+
+        Button enterButton = new Button("Enter");
+        enterButton.setMinWidth(50);
+
+        enterButton.setOnAction(e -> {
+            dbOps.updateReviewer(reviewerName,reviewerNameInput.getText());
+            reviewerNameInput.clear();
+        });
+
+        ret.getChildren().addAll(nameBox,enterButton);
+
+        ret.setSpacing(20);
+        ret.setMargin(nameBox,new Insets(15, 40, 0, 40));
+        ret.setAlignment(Pos.CENTER);
+
+        ret.prefHeightProperty().bind(wrapper.heightProperty());
+        ret.prefWidthProperty().bind(wrapper.widthProperty());
+
+        return ret;
+    }
+
+
+    public VBox selectReviewer(Pane wrapper)
+    {
+        List<String> reviewerNames = dbOps.getReviewerNames();
+        VBox ret = new VBox();
+        Label selectionLabel = new Label("Select Reviewer");
+
+        ComboBox<String> choice = new ComboBox<>(FXCollections.observableArrayList(reviewerNames));
+        Button editButton = new Button("Enter");
+        VBox select = new VBox();
+
+        select.getChildren().addAll(selectionLabel,choice);
+
+        editButton.setOnAction(e -> {
+            ret.getChildren().clear();
+            ret.getChildren().addAll(selectGame(wrapper,choice.getValue()));
+        });
+
+        ret.getChildren().addAll(select,editButton);
+
+        ret.setSpacing(20);
+        ret.setMargin(select,new Insets(15, 40, 0, 40));
+        ret.setAlignment(Pos.CENTER);
+
+        ret.prefHeightProperty().bind(wrapper.heightProperty());
+        ret.prefWidthProperty().bind(wrapper.widthProperty());
+
+
+        return ret;
+    }
+
+    public VBox selectGame(Pane wrapper,String reviewer)
+    {
+        List<String> gameNames = dbOps.gamesReviewed(reviewer);
+        VBox ret = new VBox();
+        Label selectionLabel = new Label("Select Game");
+
+        ComboBox<String> choice = new ComboBox<>(FXCollections.observableArrayList(gameNames));
+        Button editButton = new Button("Edit");
+        VBox select = new VBox();
+
+        select.getChildren().addAll(selectionLabel,choice);
+
+        editButton.setOnAction(e -> {
+            ret.getChildren().clear();
+            ret.getChildren().addAll(enterNewReviewData(wrapper,reviewer,choice.getValue()));
+        });
+
+        ret.getChildren().addAll(select,editButton);
+
+        ret.setSpacing(20);
+        ret.setMargin(select,new Insets(15, 40, 0, 40));
+        ret.setAlignment(Pos.CENTER);
+
+        ret.prefHeightProperty().bind(wrapper.heightProperty());
+        ret.prefWidthProperty().bind(wrapper.widthProperty());
+
+
+        return ret;
+    }
+
+    public VBox enterNewReviewData(Pane wrapper, String reviewerName, String gameName)
+    {
+        VBox ret = new VBox();
+        Label scoreLabel = new Label("Score");
+        Label commentLabel = new Label("Comment");
+
+        TextField scoreInput = new TextField();
+        scoreInput.setMinWidth(200);
+
+        TextField commentInput = new TextField();
+        scoreInput.setMinWidth(200);
+
+        //Add labels, textfields and buttons to the vbox
+        VBox scoreBox = new VBox();
+        scoreBox.getChildren().addAll(scoreLabel,scoreInput);
+
+        VBox commentBox = new VBox();
+        commentBox.getChildren().addAll(commentLabel,commentInput);
+
+        Button enterButton = new Button("Enter");
+        enterButton.setMinWidth(50);
+
+        enterButton.setOnAction(e -> {
+            dbOps.updateReview(gameName,reviewerName,Integer.parseInt(scoreInput.getText()),commentInput.getText());
+            scoreInput.clear();
+            commentInput.clear();
+        });
+
+        ret.getChildren().addAll(scoreBox,commentBox,enterButton);
+
+        ret.setSpacing(20);
+        ret.setMargin(scoreBox,new Insets(15, 40, 0, 40));
+        ret.setMargin(commentBox,new Insets(10, 40, 0, 40));
+        ret.setAlignment(Pos.CENTER);
+
+        ret.prefHeightProperty().bind(wrapper.heightProperty());
+        ret.prefWidthProperty().bind(wrapper.widthProperty());
+
+        return ret;
+    }
+
+    public VBox deleteData(Pane wrapper)
+    {
+        VBox ret = new VBox();
+        //Labels instructing the user which data to enter
+        Label selectionLabel = new Label("Select what you would like to Remove");
+        String game = "Game";
+        String publisher = "Publisher";
+        String reviewer = "Reviewer";
+        String review = "Review";
+
+        List<String> options = new ArrayList<>();
+        options.add(game);
+        options.add(publisher);
+        options.add(reviewer);
+        options.add(review);
+
+        //The user must select from a publisher already stored in the DB
+        ComboBox<String> comboBox = new ComboBox<>(FXCollections.observableArrayList(options));
+
+        Button enterButton = new Button("Enter");
+        enterButton.setMinWidth(50);
+
+        //Add labels, textfields and buttons to the vbox
+        VBox selectionBox = new VBox();
+        selectionBox.getChildren().addAll(selectionLabel,comboBox);
+
+        //When the button is clicked, all new game info is inserted into the DB
+        enterButton.setOnAction(e -> {
+            switch (comboBox.getValue())
+            {
+                case "Game":
+                    ret.getChildren().clear();
+                    ret.getChildren().add(removeGame(wrapper));
+                    break;
+                case "Publisher":
+                    ret.getChildren().clear();
+                    ret.getChildren().add(removePublisher(wrapper));
+                    break;
+                case "Reviewer":
+                    ret.getChildren().clear();
+                    ret.getChildren().add(removeReviewer(wrapper));
+                    break;
+                case "Review":
+                    ret.getChildren().clear();
+                    ret.getChildren().add(removeReview(wrapper));
+                    break;
+            }
+
+        });
+
+        //Adjust spacing/margins of items
+        ret.getChildren().addAll(selectionBox,enterButton);
+        ret.setSpacing(20);
+        ret.setMargin(selectionBox,new Insets(15, 40, 0, 40));
+        ret.setAlignment(Pos.CENTER);
+
+        //bind vbox to parent element
+        ret.prefHeightProperty().bind(wrapper.heightProperty());
+        ret.prefWidthProperty().bind(wrapper.widthProperty());
+
+        return ret;
+    }
+
+    public VBox removeGame(Pane wrapper)
+    {
+        VBox ret = new VBox();
+        List<String> gameNames = dbOps.getGameNames();
+
+        Label selectionLabel = new Label("Select game you would like to remove");
+
+        ComboBox<String> choice = new ComboBox<>(FXCollections.observableArrayList(gameNames));
+        Button editButton = new Button("Remove");
+        VBox select = new VBox();
+
+        select.getChildren().addAll(selectionLabel,choice);
+
+        editButton.setOnAction(e -> {
+            dbOps.removeGame(choice.getValue());
+            ret.getChildren().clear();
+        });
+
+        ret.getChildren().addAll(select,editButton);
+
+        ret.setSpacing(20);
+        ret.setMargin(select,new Insets(15, 40, 0, 40));
+        ret.setAlignment(Pos.CENTER);
+
+        ret.prefHeightProperty().bind(wrapper.heightProperty());
+        ret.prefWidthProperty().bind(wrapper.widthProperty());
+
+
+        return ret;
+    }
+
+    public VBox removePublisher(Pane wrapper)
+    {
+        List<String> pubNames = dbOps.getPublisherNames();
+        VBox ret = new VBox();
+        Label selectionLabel = new Label("Select publisher you would like to remove");
+
+        ComboBox<String> choice = new ComboBox<>(FXCollections.observableArrayList(pubNames));
+        Button editButton = new Button("Remove");
+        VBox select = new VBox();
+
+        select.getChildren().addAll(selectionLabel,choice);
+
+        editButton.setOnAction(e -> {
+            dbOps.removePublisher(choice.getValue());
+            ret.getChildren().clear();
+        });
+
+        ret.getChildren().addAll(select,editButton);
+
+        ret.setSpacing(20);
+        ret.setMargin(select,new Insets(15, 40, 0, 40));
+        ret.setAlignment(Pos.CENTER);
+
+        ret.prefHeightProperty().bind(wrapper.heightProperty());
+        ret.prefWidthProperty().bind(wrapper.widthProperty());
+
+
+        return ret;
+    }
+
+    public VBox removeReviewer(Pane wrapper)
+    {
+        List<String> reviewerNames = dbOps.getReviewerNames();
+        VBox ret = new VBox();
+        Label selectionLabel = new Label("Select Reviewer You wish to remove");
+
+        ComboBox<String> choice = new ComboBox<>(FXCollections.observableArrayList(reviewerNames));
+        Button editButton = new Button("Remove");
+        VBox select = new VBox();
+
+        select.getChildren().addAll(selectionLabel,choice);
+
+        editButton.setOnAction(e -> {
+            dbOps.removeReviewer(choice.getValue());
+            ret.getChildren().clear();
+        });
+
+        ret.getChildren().addAll(select,editButton);
+
+        ret.setSpacing(20);
+        ret.setMargin(select,new Insets(15, 40, 0, 40));
+        ret.setAlignment(Pos.CENTER);
+
+        ret.prefHeightProperty().bind(wrapper.heightProperty());
+        ret.prefWidthProperty().bind(wrapper.widthProperty());
+
+
+        return ret;
+    }
+
+    public VBox removeReview(Pane wrapper)
+    {
+        List<String> reviewerNames = dbOps.getReviewerNames();
+        VBox ret = new VBox();
+        Label selectionLabel = new Label("Select Reviewer");
+
+        ComboBox<String> choice = new ComboBox<>(FXCollections.observableArrayList(reviewerNames));
+        Button editButton = new Button("Enter");
+        VBox select = new VBox();
+
+        select.getChildren().addAll(selectionLabel,choice);
+
+        editButton.setOnAction(e -> {
+            ret.getChildren().clear();
+            ret.getChildren().addAll(selectGameForDeletion(wrapper,choice.getValue()));
+        });
+
+        ret.getChildren().addAll(select,editButton);
+
+        ret.setSpacing(20);
+        ret.setMargin(select,new Insets(15, 40, 0, 40));
+        ret.setAlignment(Pos.CENTER);
+
+        ret.prefHeightProperty().bind(wrapper.heightProperty());
+        ret.prefWidthProperty().bind(wrapper.widthProperty());
+
+
+        return ret;
+    }
+
+    public VBox selectGameForDeletion(Pane wrapper,String reviewer)
+    {
+        List<String> gameNames = dbOps.gamesReviewed(reviewer);
+        VBox ret = new VBox();
+        Label selectionLabel = new Label("Select Game");
+
+        ComboBox<String> choice = new ComboBox<>(FXCollections.observableArrayList(gameNames));
+        Button editButton = new Button("Remove");
+        VBox select = new VBox();
+
+        select.getChildren().addAll(selectionLabel,choice);
+
+        editButton.setOnAction(e -> {
+            dbOps.removeReview(reviewer,choice.getValue());
+            ret.getChildren().clear();
+        });
+
+        ret.getChildren().addAll(select,editButton);
+
+        ret.setSpacing(20);
+        ret.setMargin(select,new Insets(15, 40, 0, 40));
+        ret.setAlignment(Pos.CENTER);
+
+        ret.prefHeightProperty().bind(wrapper.heightProperty());
+        ret.prefWidthProperty().bind(wrapper.widthProperty());
+
+
+        return ret;
     }
 
 }
